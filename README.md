@@ -2,6 +2,8 @@
 
 **An AI tool says its COBOL edit is "just a refactor". Banyan Sapling checks that claim against the bank's change policy and a formal proof, and the gate blocks the merge when the claim is false.**
 
+**Live demo:** https://atiladeokegab.github.io/sapling-cobol-gate/ (calls Sapling from your browser; edit the AI's description or the policy and run again)
+
 ![Sapling blocks the false refactor claim and holds the real refactor for a reviewer](demo/gate.png)
 
 Banks are letting AI assistants edit decades-old COBOL that moves money. The AI writes a confident change description ("readability refactor, no change to pay") and a tired reviewer approves it. This gate makes the description itself something that gets verified.
