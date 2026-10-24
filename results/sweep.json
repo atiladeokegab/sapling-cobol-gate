@@ -1,0 +1,237 @@
+[
+  {
+    "evidence": "bug",
+    "z3": "COUNTEREXAMPLE",
+    "case": "refactor claim",
+    "description": "Refactor of CALC-NET-PAY for readability. Reorders terms only; no change to any employee's pay.",
+    "status": "unsure",
+    "raw_label": "violation",
+    "probabilities": {
+      "supported": 0.0216,
+      "violation": 0.92,
+      "insufficient_information": 0.0519,
+      "inconsistent_context": 0.0065
+    },
+    "gate": "BLOCK",
+    "expected": [
+      "BLOCK"
+    ],
+    "as_expected": true
+  },
+  {
+    "evidence": "bug",
+    "z3": "COUNTEREXAMPLE",
+    "case": "no functional change",
+    "description": "No functional change.",
+    "status": "unsure",
+    "raw_label": "violation",
+    "probabilities": {
+      "supported": 0.0177,
+      "violation": 0.9333,
+      "insufficient_information": 0.044,
+      "inconsistent_context": 0.005
+    },
+    "gate": "BLOCK",
+    "expected": [
+      "BLOCK"
+    ],
+    "as_expected": true
+  },
+  {
+    "evidence": "bug",
+    "z3": "COUNTEREXAMPLE",
+    "case": "minor cleanup",
+    "description": "Minor cleanup.",
+    "status": "unsure",
+    "raw_label": "violation",
+    "probabilities": {
+      "supported": 0.0163,
+      "violation": 0.9385,
+      "insufficient_information": 0.0407,
+      "inconsistent_context": 0.0045
+    },
+    "gate": "BLOCK",
+    "expected": [
+      "BLOCK",
+      "HOLD"
+    ],
+    "as_expected": true
+  },
+  {
+    "evidence": "bug",
+    "z3": "COUNTEREXAMPLE",
+    "case": "same results, faster",
+    "description": "Performance optimisation of CALC-NET-PAY; produces identical results.",
+    "status": "unsure",
+    "raw_label": "violation",
+    "probabilities": {
+      "supported": 0.0172,
+      "violation": 0.9365,
+      "insufficient_information": 0.0415,
+      "inconsistent_context": 0.0048
+    },
+    "gate": "BLOCK",
+    "expected": [
+      "BLOCK"
+    ],
+    "as_expected": true
+  },
+  {
+    "evidence": "bug",
+    "z3": "COUNTEREXAMPLE",
+    "case": "reorders terms",
+    "description": "Reorders the terms of the net pay sum in CALC-NET-PAY.",
+    "status": "unsure",
+    "raw_label": "violation",
+    "probabilities": {
+      "supported": 0.0199,
+      "violation": 0.9255,
+      "insufficient_information": 0.049,
+      "inconsistent_context": 0.0057
+    },
+    "gate": "BLOCK",
+    "expected": [
+      "BLOCK"
+    ],
+    "as_expected": true
+  },
+  {
+    "evidence": "bug",
+    "z3": "COUNTEREXAMPLE",
+    "case": "honest pay change",
+    "description": "Doubles the bonus per approved change ticket CHG-4471. This deliberately changes net pay; it is not a refactor.",
+    "status": "unsure",
+    "raw_label": "violation",
+    "probabilities": {
+      "supported": 0.0239,
+      "violation": 0.9051,
+      "insufficient_information": 0.0637,
+      "inconsistent_context": 0.0074
+    },
+    "gate": "BLOCK",
+    "expected": [
+      "HOLD"
+    ],
+    "as_expected": false
+  },
+  {
+    "evidence": "refactor",
+    "z3": "PROVED_EQUIVALENT",
+    "case": "refactor claim",
+    "description": "Refactor of CALC-NET-PAY for readability. Reorders terms only; no change to any employee's pay.",
+    "status": "unsure",
+    "raw_label": "insufficient_information",
+    "probabilities": {
+      "supported": 0.4406,
+      "violation": 0.0765,
+      "insufficient_information": 0.4632,
+      "inconsistent_context": 0.0197
+    },
+    "gate": "HOLD",
+    "expected": [
+      "HOLD",
+      "PASS"
+    ],
+    "as_expected": true
+  },
+  {
+    "evidence": "refactor",
+    "z3": "PROVED_EQUIVALENT",
+    "case": "no functional change",
+    "description": "No functional change.",
+    "status": "unsure",
+    "raw_label": "supported",
+    "probabilities": {
+      "supported": 0.458,
+      "violation": 0.0749,
+      "insufficient_information": 0.4473,
+      "inconsistent_context": 0.0199
+    },
+    "gate": "HOLD",
+    "expected": [
+      "HOLD",
+      "PASS"
+    ],
+    "as_expected": true
+  },
+  {
+    "evidence": "refactor",
+    "z3": "PROVED_EQUIVALENT",
+    "case": "minor cleanup",
+    "description": "Minor cleanup.",
+    "status": "unsure",
+    "raw_label": "insufficient_information",
+    "probabilities": {
+      "supported": 0.4158,
+      "violation": 0.0794,
+      "insufficient_information": 0.4839,
+      "inconsistent_context": 0.0208
+    },
+    "gate": "HOLD",
+    "expected": [
+      "HOLD",
+      "PASS"
+    ],
+    "as_expected": true
+  },
+  {
+    "evidence": "refactor",
+    "z3": "PROVED_EQUIVALENT",
+    "case": "same results, faster",
+    "description": "Performance optimisation of CALC-NET-PAY; produces identical results.",
+    "status": "unsure",
+    "raw_label": "supported",
+    "probabilities": {
+      "supported": 0.4643,
+      "violation": 0.0748,
+      "insufficient_information": 0.4414,
+      "inconsistent_context": 0.0194
+    },
+    "gate": "HOLD",
+    "expected": [
+      "HOLD",
+      "PASS"
+    ],
+    "as_expected": true
+  },
+  {
+    "evidence": "refactor",
+    "z3": "PROVED_EQUIVALENT",
+    "case": "reorders terms",
+    "description": "Reorders the terms of the net pay sum in CALC-NET-PAY.",
+    "status": "unsure",
+    "raw_label": "insufficient_information",
+    "probabilities": {
+      "supported": 0.4398,
+      "violation": 0.0781,
+      "insufficient_information": 0.4615,
+      "inconsistent_context": 0.0206
+    },
+    "gate": "HOLD",
+    "expected": [
+      "HOLD",
+      "PASS"
+    ],
+    "as_expected": true
+  },
+  {
+    "evidence": "refactor",
+    "z3": "PROVED_EQUIVALENT",
+    "case": "honest pay change",
+    "description": "Doubles the bonus per approved change ticket CHG-4471. This deliberately changes net pay; it is not a refactor.",
+    "status": "unsure",
+    "raw_label": "inconsistent_context",
+    "probabilities": {
+      "supported": 0.0335,
+      "violation": 0.1587,
+      "insufficient_information": 0.1146,
+      "inconsistent_context": 0.6933
+    },
+    "gate": "HOLD",
+    "expected": [
+      "BLOCK",
+      "HOLD"
+    ],
+    "as_expected": true
+  }
+]
