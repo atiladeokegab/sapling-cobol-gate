@@ -1,0 +1,12 @@
+{
+  "program": "PAYROLL.cob",
+  "source_diff": [
+    "-               WS-BASE-PAY + WS-BONUS - WS-DEDUCTION - WS-TAX-AMOUNT.",
+    "+               WS-BONUS + WS-BASE-PAY - WS-DEDUCTION - WS-TAX-AMOUNT."
+  ],
+  "changed_paragraphs": [
+    "CALC-NET-PAY"
+  ],
+  "z3_formal_result": "PROVED_EQUIVALENT",
+  "z3_formal_detail": "[symbolic] Symbolically proved equivalent for targets: ['WS-NET-PAY', 'WS-TAX-AMOUNT']"
+}

@@ -1,0 +1,12 @@
+{
+  "program": "PAYROLL.cob",
+  "source_diff": [
+    "-               WS-BASE-PAY + WS-BONUS - WS-DEDUCTION - WS-TAX-AMOUNT.",
+    "+               WS-BASE-PAY + WS-BONUS * 2 - WS-DEDUCTION - WS-TAX-AMOUNT."
+  ],
+  "changed_paragraphs": [
+    "CALC-NET-PAY"
+  ],
+  "z3_formal_result": "COUNTEREXAMPLE",
+  "z3_formal_detail": "[symbolic] Counterexample for WS-NET-PAY: orig=0.00, mod=9999999.99, witness={WS-BASE-PAY=0.02, WS-BONUS=9999999.99, WS-DEDUCTION=0.01, WS-TAX-RATE=0.01}"
+}
