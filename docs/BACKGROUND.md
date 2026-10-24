@@ -321,7 +321,7 @@ Ground truth comes from construction, not hand labels, and a test pins every edi
 
 AUROC of p(violation) is 0.93 overall and 0.85 on honest vs misdescribed.
 
-At the gate: **0 false PASS. 61 of 63 BLOCKs are correct.** Every phantom change (24 of 24) and 35
+At the gate: **63 BLOCK (61 correct), 117 HOLD, 0 PASS of any kind**, so no false PASS but no selective approval shown yet. Every phantom change (24 of 24) and 35
 of 36 false "no change" claims are blocked outright; everything else goes to HOLD. The costs are
 19 false alarms among 84 compliant cases at the flag threshold, most of them refactors that
 restructure a formula. At the gate those are HOLDs, except 2 BLOCKs.

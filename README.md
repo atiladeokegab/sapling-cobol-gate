@@ -11,17 +11,19 @@
 [![Live demo](https://img.shields.io/badge/live%20demo-GitHub%20Pages-222?logo=github)](https://atiladeokegab.github.io/sapling-cobol-gate/)
 [![tests](https://github.com/atiladeokegab/sapling-cobol-gate/actions/workflows/tests.yml/badge.svg)](https://github.com/atiladeokegab/sapling-cobol-gate/actions/workflows/tests.yml)
 
-**An AI tool says what its COBOL edit does. Banyan Sapling checks that description against the bank's change policy and a formal proof, and the gate blocks the merge when the description is false.**
+**An AI tool says what its COBOL edit does. Banyan Sapling checks that description against the bank's change policy and a formal proof, and a command-line gate turns the ruling into BLOCK, HOLD or PASS, as an exit code CI can enforce.**
 
-**On 180 held-out cases from 12 banking programs, Sapling is right 87% of the time, against 67% for the Z3 proof alone. It never passes a non-compliant change, and 61 of its 63 blocks are correct.**
+**On a synthetic benchmark of 180 AI descriptions of 60 edits across 12 authored banking programs, held out from development, Sapling's flag matches the construction-assigned label 87% of the time (156 of 180), against 67% for the Z3 proof alone. At the stricter gate it blocked 63 (61 correctly) and held 117 for review; none passed. Ticket approval is assumed in the scenarios.**
 
 [**Try it live**](https://atiladeokegab.github.io/sapling-cobol-gate/) · [**Demo video**](https://x.com/AtiladeOke14498/status/2113918417879060500) · [**Evaluation**](#evaluation-180-held-out-cases) · [**In Refinery**](#inside-refinerys-portal) · [**For judges**](#for-judges) · [**Architecture (C4)**](docs/ARCHITECTURE.md) · [**Background**](docs/BACKGROUND.md) · [**For agents**](AGENTS.md) · [**How it works**](#how-it-works) · [**The demo**](#the-demo-one-payroll-program-two-ai-edits) · [**Sweep**](#sweep-six-descriptions-two-edits) · [**Run it**](#run-it) · [**Honest limits**](#honest-limits) · [**Film**](https://github.com/atiladeokegab/sapling-cobol-gate/releases/tag/v0.1)
 
-<img src="docs/demo.gif" alt="The live demo page: Edit 1 doubles the bonus; clicking Run Sapling check fills violation 0.92 and stamps BLOCK. Edit 2, a proved-equivalent refactor, runs and stamps HOLD for a named reviewer." width="100%">
+<img src="docs/demo.gif" alt="The live demo page: Edit 1 doubles the bonus; clicking Run Sapling check fills violation 0.92 and stamps BLOCK. Edit 2, a proved-equivalent refactor, runs and stamps HOLD for human review." width="100%">
 
 </div>
 
 ## Evaluation: 180 held-out cases
+
+**Scope.** A synthetic benchmark: 12 programs written for this eval, 60 edits, three descriptions per edit (so the 180 cases are related, not independent). Labels come from how each case was built, and every cited ticket is assumed approved. None of it is production bank code.
 
 A formal proof tells you **whether** a change alters computed results. It cannot tell you whether the AI's description of the change is **true**. That is the gap Sapling fills, so the eval is built to measure it.
 
@@ -41,7 +43,7 @@ Neither input decides the answer on its own. The same "no change" description is
 
 ![Held-out eval: Sapling's p(violation) for each case, by kind](docs/eval.png)
 
-**Results.** Policy, evidence wording, claim and threshold were frozen on the PAYROLL demo before this corpus was scored ([eval/TUNING.md](eval/TUNING.md)), and the corpus was run once. All 180 calls hit the same model weights (`banyan-sapling`, sha256 `103a67f7a112…`).
+**Results.** By our recorded development log ([eval/TUNING.md](eval/TUNING.md)), policy, evidence wording, claim and threshold were set on the PAYROLL demo before this corpus was scored, and the corpus was run once. The log, corpus and results were committed together, so the log is our record of the order, not independent proof of it. All 180 calls hit the same model weights (`banyan-sapling`, sha256 `103a67f7a112…`).
 
 | Approach | Accuracy | Refactor + "no change" (48) | Phantom (24) | Behaviour + "no change" (36) | Honest (36) | Misdescribed (36) |
 |---|---|---|---|---|---|---|
@@ -51,10 +53,10 @@ Neither input decides the answer on its own. The same "no change" description is
 | **Sapling** (flag at p(violation) ≥ 0.15, set on dev) | **87%** | 38 | 24 | 36 | 27 | **31** |
 
 - **Sapling is the only approach that tells honest from misdescribed.** On those 72 cases the formal evidence is identical, so Z3 and the rule both score 50%. Sapling scores 81%, with AUROC 0.85. Across all 180 cases its AUROC is **0.93**.
-- **The gate is safe where it matters.**
-  - **0 false PASS:** no non-compliant change ever passed.
+- **Two operating points.** The 87% above is Sapling's flag at p(violation) ≥ 0.15. The gate itself BLOCKs only when the top label is `violation` at ≥ 0.90; its counts on all 180: **63 BLOCK (61 correct, 2 false), 117 HOLD, 0 PASS.**
+  - **0 PASS of any kind in this run:** no non-compliant change passed, but no compliant one did either, so selective approval is not yet demonstrated.
   - **61 of 63 BLOCKs were correct (97% precision).** Every phantom change (24 of 24) and 35 of 36 false "no change" claims were blocked outright.
-  - **Everything else went to HOLD**, a named human reviewer.
+  - **Everything else went to HOLD** for human review. Routing a HOLD to a named reviewer is the host pipeline's job; this repo emits the decision and exit code.
 - **Where it errs:**
   - **19 false alarms on compliant cases (23%).** Most are refactors that restructure a formula (bracketing, distributing a rate), or honest descriptions of changes that look absurd on purpose. In the gate these land on HOLD, except 2 that were blocked.
   - **5 misdescribed cases slipped under the flag threshold.** At the gate they still went to HOLD, never PASS.
@@ -92,7 +94,7 @@ uv run --no-project --with pytest --with z3-solver pytest -q tests   # 9 offline
 
 **Where Sapling does the hard part:** nothing in the code compares the AI's description to the change. Sapling alone decides whether a description like "reorders terms only; no change to pay" or "raises the rate to 2.5% per CHG-2271" is true of the change. The gate only acts on its scores. The eval shows that judgement is what separates an honest change from a misdescribed one; the proof alone cannot.
 
-**What is private:** [Refinery](https://refinery.guru), the full attestation engine (11 checks, compiled-output comparison, a much wider Z3 model, signed certificates). Its output for both edits is saved in [evidence/](evidence/) via [export_evidence.py](export_evidence.py); `z3check.py` is a small open re-implementation of the one check this demo needs, and a test pins that both agree. All code here was written during Night Shift.
+**What is private:** [Refinery](https://refinery.guru), the full attestation engine (11 checks, compiled-output comparison, a much wider Z3 model, signed certificates). Its output for both edits is saved in [evidence/](evidence/) via [export_evidence.py](export_evidence.py); `z3check.py` is a small open re-implementation of the one check this demo needs, and a test pins that both give the same result on the two demo edits. All code here was written during Night Shift.
 
 ## The system at a glance
 
@@ -129,7 +131,7 @@ Banks are letting AI assistants edit decades-old COBOL that moves money. The AI 
 
 ![Pipeline: AI tool edit, Refinery, Sapling, gate, named human sign-off](docs/pipeline.png)
 
-1. **[Refinery](https://refinery.guru)** audits the change: it diffs the original against the AI-modified program and runs a Z3 formal check that either proves the two compute identical results for every input, or finds a counterexample.
+1. **[Refinery](https://refinery.guru)** audits the change: it diffs the original against the AI-modified program and runs a Z3 formal check that either proves the two compute identical results for every input, or finds a counterexample. The open check in this repo models COMPUTE arithmetic over nonnegative reals only; Refinery's private engine covers more.
 2. **Banyan Sapling** gets three things:
    - **policy**: the change-control rules ([policy.md](policy.md))
    - **evidence**: what the AI tool said it did, the original and modified lines, and Refinery's formal result in plain words, including a concrete counterexample when there is one
