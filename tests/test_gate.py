@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 
-from gate import decide, evidence_text
+from gate import PROVED, decide, evidence_text, formal_text
 from z3check import check, computes
 
 R = Path(__file__).resolve().parent.parent
@@ -49,4 +49,23 @@ def test_computes_reads_both_statements():
 def test_evidence_names_the_change_and_the_proof():
     ev = check(COB / "PAYROLL.cob", COB / "PAYROLL_ai_bug.cob")
     text = evidence_text(ev, "No change to pay.")
-    assert "WS-BONUS * 2" in text and "COUNTEREXAMPLE" in text and '"No change to pay."' in text
+    assert "WS-BONUS * 2" in text and '"No change to pay."' in text
+    assert "WS-NET-PAY is 1 in the original and 2 in the modified program" in text
+
+
+def test_formal_text_reads_both_evidence_formats():
+    for name in ("bug", "refactor"):  # Refinery's saved evidence and the open check must say the same thing
+        saved = json.loads((R / "evidence" / f"{name}.json").read_text())
+        assert formal_text(saved).startswith("Formal verification (Z3)")
+    assert formal_text({"z3_formal_result": "PROVED_EQUIVALENT"}) == PROVED
+    bug = json.loads((R / "evidence" / "bug.json").read_text())
+    assert "in the original and" in formal_text(bug)  # the witness was parsed, not the fallback
+
+
+def test_eval_corpus_kinds_match_z3():
+    edits = json.loads((R / "eval" / "corpus.json").read_text())
+    assert len(edits) == 60
+    for e in edits:
+        d = R / "eval" / "corpus" / e["program"]
+        res = check(d / "orig.cob", d / f"{e['edit']}.cob")["z3_formal_result"]
+        assert (res == "PROVED_EQUIVALENT") == (e["kind"] == "refactor"), (e["program"], e["edit"])

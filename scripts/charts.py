@@ -1,4 +1,4 @@
-"""Draw the README charts and pipeline diagram from demo/*.txt and results/sweep.json.
+"""Draw the README charts and pipeline diagram from demo/*.txt, results/sweep.json and results/eval.json.
 
     uv run --with matplotlib scripts/charts.py
 """
@@ -87,6 +87,34 @@ def chart_sweep():
     fig.savefig(OUT / "sweep.png", dpi=160)
 
 
+def chart_eval():
+    rows = json.loads((ROOT / "results" / "eval.json").read_text())
+    order = [("refactor", "refactor_claim", "Refactor edit, says no change"), ("behaviour", "honest", "Real change, described honestly"),
+             ("refactor", "phantom", "Refactor edit, claims a change"), ("behaviour", "misdescribed", "Real change, described wrongly"),
+             ("behaviour", "refactor_claim", "Real change, says no change")]
+    fig, ax = plt.subplots(figsize=(10, 4.6))
+    for i, (kind, desc, name) in enumerate(order):
+        sub = [r for r in rows if r["kind"] == kind and r["description_kind"].replace("_2", "") == desc]
+        c = GREEN if sub[0]["complies"] else RED
+        for j, r in enumerate(sub):
+            g = {"BLOCK": RED, "PASS": GREEN, "HOLD": AMBER}[r["gate"]]
+            ax.scatter(r["probabilities"]["violation"], i + (j % 7 - 3) * 0.06, s=26, color=c, edgecolors=g if r["gate"] != "HOLD" else "none", linewidths=1.2, zorder=2)
+        ax.text(1.03, i, f'{sum(r["gate"] == "BLOCK" for r in sub)}/{len(sub)} BLOCK', va="center", fontsize=9.5, color=MUTED)
+    ax.axvline(0.15, color=MUTED, linestyle=":", linewidth=1.2)
+    ax.text(0.16, len(order) - 0.45, "flag at 0.15 (set on dev)", color=MUTED, fontsize=9)
+    ax.axvline(0.90, color=AMBER, linestyle="--", linewidth=1.2)
+    ax.text(0.89, len(order) - 0.45, "BLOCK at 0.90", color=AMBER, ha="right", fontsize=9)
+    ax.set_yticks(range(len(order)), [o[2] for o in order])
+    ax.set_ylim(len(order) - 0.25, -0.5)
+    ax.set_xlim(0, 1.2)
+    ax.set_xticks([0, 0.25, 0.5, 0.75, 1.0])
+    ax.set_xlabel("Sapling p(violation)    green = complies, red = does not")
+    ax.set_title(f"Held-out eval: {len(rows)} cases, {len({r['program'] for r in rows})} programs never seen in tuning", loc="left", color=INK, pad=12)
+    style(ax)
+    fig.tight_layout()
+    fig.savefig(OUT / "eval.png", dpi=160)
+
+
 def diagram():
     fig, ax = plt.subplots(figsize=(12, 4.4))
     ax.set_xlim(0, 12)
@@ -120,7 +148,8 @@ def diagram():
 
 
 if __name__ == "__main__":
-    assert demo_probs("bug")["violation"] == 0.92  # parser self-check against the committed transcript
+    assert demo_probs("bug")["violation"] == 0.93  # parser self-check against the committed transcript
     chart_demo()
     chart_sweep()
+    chart_eval()
     diagram()

@@ -55,7 +55,7 @@ details summary{cursor:pointer;color:var(--mute);font-size:13px}details pre{whit
 <section class="right">
   <div class="card">
     <h2>Change-control policy</h2>
-    <textarea id="policy" rows="6"></textarea>
+    <textarea id="policy" rows="10"></textarea>
     <p class="small" style="margin:8px 0 0">Claim under test: <b id="claim"></b></p>
   </div>
   <button class="run" id="run">Run Sapling check</button>
@@ -73,21 +73,31 @@ const DATA = __DATA__;
 // Same logic as gate.py: evidence wording, claim and the asymmetric gate.
 const SAPLING = "https://6adbee0669a00298cd4774c9.endpoints.huggingface.cloud", BLOCK_AT = 0.90;
 const CLAIM = "The AI-assisted change complies with the policy.";
-const FORMAL = {
-  PROVED_EQUIVALENT: "Z3 formally proved the modified program computes exactly the same results as the original for every possible input.",
-  COUNTEREXAMPLE: "Z3 found concrete inputs for which the modified program computes a different result from the original, so the change alters behaviour.",
-};
+const PROVED = "Formal verification (Z3) proved that the modified program computes exactly the same results " +
+  "as the original for every possible input: no computed result changed.";
 const DEFAULT_DESC = "Refactor of CALC-NET-PAY for readability. Reorders terms only; no change to any employee's pay.";
 const LABELS = [["violation", "violation", "var(--red)"], ["supported", "supported", "var(--green)"],
                 ["insufficient_information", "insufficient info", "var(--amber)"], ["inconsistent_context", "inconsistent", "var(--grey)"]];
 const $ = (id) => document.getElementById(id);
 let cur = "bug";
 
+function formalText(e) {
+  if (e.z3_formal_result === "PROVED_EQUIVALENT") return PROVED;
+  if (e.z3_formal_result !== "COUNTEREXAMPLE") return "Formal verification reached no result.";
+  const head = "Formal verification (Z3) shows the change alters computed results.", d = e.z3_formal_detail;
+  let m = d.match(/Counterexample with inputs \{(.*)\}: (.*)/), ins, outs;  // z3check.py
+  if (m) {
+    ins = [...m[1].matchAll(/'([^']+)': '([^']+)'/g)].map((x) => `${x[1]} = ${x[2]}`).join(", ");
+    outs = [...m[2].matchAll(/([\w-]+): original ([^,;]+), modified ([^;]+)/g)].map((x) => `${x[1]} is ${x[2]} in the original and ${x[3]} in the modified program`).join("; ");
+  } else if ((m = d.match(/Counterexample for ([\w-]+): orig=([^,]+), mod=([^,]+), witness=\{(.*)\}/))) {  // Refinery
+    ins = m[4].replaceAll("=", " = "); outs = `${m[1]} is ${m[2]} in the original and ${m[3]} in the modified program`;
+  } else return head;
+  return `${head} For example, with inputs ${ins}, ${outs}.`;
+}
 function evidenceText(e, d) {
-  const [o, n] = e.source_diff.slice(0, 2).map((l) => l.slice(1).trim());
+  const side = (c) => e.source_diff.filter((l) => l.startsWith(c)).map((l) => l.slice(1).trim()).join(" ");
   return `The AI coding assistant changed paragraph ${e.changed_paragraphs.join(", ")} of ${e.program} ` +
-    `and described the change as: "${d}" Original line: ${o} Modified line: ${n} ` +
-    `Formal verification result: ${e.z3_formal_result}. ` + (FORMAL[e.z3_formal_result] || "Formal verification reached no result.");
+    `and described the change as: "${d}" Original line: ${side("-")} Modified line: ${side("+")} ` + formalText(e);
 }
 function decide(r) {
   const p = r.probabilities;
@@ -110,7 +120,7 @@ function load(k) {
   codeView($("orig"), DATA.cobol.orig, DATA.cobol[k], "del"); codeView($("mod"), DATA.cobol[k], DATA.cobol.orig, "add");
   const bad = e.z3_formal_result === "COUNTEREXAMPLE";
   $("z3").textContent = e.z3_formal_result; $("z3").className = "badge " + (bad ? "b-red" : "b-green");
-  $("z3plain").textContent = FORMAL[e.z3_formal_result]; $("z3detail").textContent = e.z3_formal_detail;
+  $("z3plain").textContent = formalText(e); $("z3detail").textContent = e.z3_formal_detail;
   resetVerdict(); $("meta").textContent = "Not run yet.";
 }
 async function run() {

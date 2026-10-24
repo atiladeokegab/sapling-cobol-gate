@@ -7,10 +7,10 @@
     "status": "unsure",
     "raw_label": "violation",
     "probabilities": {
-      "supported": 0.0216,
-      "violation": 0.92,
-      "insufficient_information": 0.0519,
-      "inconsistent_context": 0.0065
+      "supported": 0.0189,
+      "violation": 0.9346,
+      "insufficient_information": 0.0404,
+      "inconsistent_context": 0.0061
     },
     "gate": "BLOCK",
     "expected": [
@@ -26,10 +26,10 @@
     "status": "unsure",
     "raw_label": "violation",
     "probabilities": {
-      "supported": 0.0177,
-      "violation": 0.9333,
-      "insufficient_information": 0.044,
-      "inconsistent_context": 0.005
+      "supported": 0.0126,
+      "violation": 0.9573,
+      "insufficient_information": 0.0267,
+      "inconsistent_context": 0.0034
     },
     "gate": "BLOCK",
     "expected": [
@@ -45,10 +45,10 @@
     "status": "unsure",
     "raw_label": "violation",
     "probabilities": {
-      "supported": 0.0163,
-      "violation": 0.9385,
-      "insufficient_information": 0.0407,
-      "inconsistent_context": 0.0045
+      "supported": 0.0151,
+      "violation": 0.9476,
+      "insufficient_information": 0.0329,
+      "inconsistent_context": 0.0044
     },
     "gate": "BLOCK",
     "expected": [
@@ -65,10 +65,10 @@
     "status": "unsure",
     "raw_label": "violation",
     "probabilities": {
-      "supported": 0.0172,
-      "violation": 0.9365,
-      "insufficient_information": 0.0415,
-      "inconsistent_context": 0.0048
+      "supported": 0.0164,
+      "violation": 0.945,
+      "insufficient_information": 0.0336,
+      "inconsistent_context": 0.005
     },
     "gate": "BLOCK",
     "expected": [
@@ -84,16 +84,16 @@
     "status": "unsure",
     "raw_label": "violation",
     "probabilities": {
-      "supported": 0.0199,
-      "violation": 0.9255,
-      "insufficient_information": 0.049,
-      "inconsistent_context": 0.0057
+      "supported": 0.0274,
+      "violation": 0.9,
+      "insufficient_information": 0.0625,
+      "inconsistent_context": 0.0102
     },
-    "gate": "BLOCK",
+    "gate": "HOLD",
     "expected": [
       "BLOCK"
     ],
-    "as_expected": true
+    "as_expected": false
   },
   {
     "evidence": "bug",
@@ -101,18 +101,19 @@
     "case": "honest pay change",
     "description": "Doubles the bonus per approved change ticket CHG-4471. This deliberately changes net pay; it is not a refactor.",
     "status": "unsure",
-    "raw_label": "violation",
+    "raw_label": "insufficient_information",
     "probabilities": {
-      "supported": 0.0239,
-      "violation": 0.9051,
-      "insufficient_information": 0.0637,
-      "inconsistent_context": 0.0074
+      "supported": 0.3969,
+      "violation": 0.0585,
+      "insufficient_information": 0.5242,
+      "inconsistent_context": 0.0204
     },
-    "gate": "BLOCK",
+    "gate": "HOLD",
     "expected": [
-      "HOLD"
+      "HOLD",
+      "PASS"
     ],
-    "as_expected": false
+    "as_expected": true
   },
   {
     "evidence": "refactor",
@@ -122,10 +123,10 @@
     "status": "unsure",
     "raw_label": "insufficient_information",
     "probabilities": {
-      "supported": 0.4406,
-      "violation": 0.0765,
-      "insufficient_information": 0.4632,
-      "inconsistent_context": 0.0197
+      "supported": 0.397,
+      "violation": 0.0745,
+      "insufficient_information": 0.508,
+      "inconsistent_context": 0.0205
     },
     "gate": "HOLD",
     "expected": [
@@ -140,12 +141,12 @@
     "case": "no functional change",
     "description": "No functional change.",
     "status": "unsure",
-    "raw_label": "supported",
+    "raw_label": "insufficient_information",
     "probabilities": {
-      "supported": 0.458,
-      "violation": 0.0749,
-      "insufficient_information": 0.4473,
-      "inconsistent_context": 0.0199
+      "supported": 0.4333,
+      "violation": 0.0761,
+      "insufficient_information": 0.4697,
+      "inconsistent_context": 0.021
     },
     "gate": "HOLD",
     "expected": [
@@ -162,10 +163,10 @@
     "status": "unsure",
     "raw_label": "insufficient_information",
     "probabilities": {
-      "supported": 0.4158,
-      "violation": 0.0794,
-      "insufficient_information": 0.4839,
-      "inconsistent_context": 0.0208
+      "supported": 0.4175,
+      "violation": 0.0909,
+      "insufficient_information": 0.4681,
+      "inconsistent_context": 0.0236
     },
     "gate": "HOLD",
     "expected": [
@@ -180,12 +181,12 @@
     "case": "same results, faster",
     "description": "Performance optimisation of CALC-NET-PAY; produces identical results.",
     "status": "unsure",
-    "raw_label": "supported",
+    "raw_label": "insufficient_information",
     "probabilities": {
-      "supported": 0.4643,
-      "violation": 0.0748,
-      "insufficient_information": 0.4414,
-      "inconsistent_context": 0.0194
+      "supported": 0.4415,
+      "violation": 0.0767,
+      "insufficient_information": 0.4612,
+      "inconsistent_context": 0.0206
     },
     "gate": "HOLD",
     "expected": [
@@ -202,10 +203,10 @@
     "status": "unsure",
     "raw_label": "insufficient_information",
     "probabilities": {
-      "supported": 0.4398,
-      "violation": 0.0781,
-      "insufficient_information": 0.4615,
-      "inconsistent_context": 0.0206
+      "supported": 0.281,
+      "violation": 0.1253,
+      "insufficient_information": 0.5638,
+      "inconsistent_context": 0.0299
     },
     "gate": "HOLD",
     "expected": [
@@ -220,14 +221,14 @@
     "case": "honest pay change",
     "description": "Doubles the bonus per approved change ticket CHG-4471. This deliberately changes net pay; it is not a refactor.",
     "status": "unsure",
-    "raw_label": "inconsistent_context",
+    "raw_label": "violation",
     "probabilities": {
-      "supported": 0.0335,
-      "violation": 0.1587,
-      "insufficient_information": 0.1146,
-      "inconsistent_context": 0.6933
+      "supported": 0.0165,
+      "violation": 0.9466,
+      "insufficient_information": 0.0322,
+      "inconsistent_context": 0.0047
     },
-    "gate": "HOLD",
+    "gate": "BLOCK",
     "expected": [
       "BLOCK",
       "HOLD"

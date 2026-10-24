@@ -57,7 +57,9 @@ flowchart LR
         z3c["<b>z3check.py</b><br/>[Python module + CLI]<br/>Open formal check: COMPUTE<br/>equivalence with Z3"]
         page["<b>Live demo page</b><br/>[Static HTML + JS, GitHub Pages]<br/>docs/index.html, built from<br/>scripts/page.html"]
         sweep["<b>sweep.py + charts.py</b><br/>[Python scripts]<br/>12-call robustness sweep,<br/>chart rendering"]
-        data[("<b>Data</b><br/>[Files]<br/>cobol/*.cob, policy.md,<br/>evidence/*.json, results/sweep.json")]
+        evalr["<b>eval/run_eval.py</b><br/>[Python script]<br/>180-case held-out eval,<br/>baselines, metrics"]
+        corpus[("<b>Eval corpus</b><br/>[Files]<br/>12 programs, 60 edits,<br/>180 descriptions")]
+        data[("<b>Data</b><br/>[Files]<br/>cobol/*.cob, policy.md,<br/>evidence/*.json, results/*.json")]
         tests["<b>tests/test_gate.py</b><br/>[pytest, offline]"]
     end
     subgraph private["Refinery (private product)"]
@@ -72,6 +74,11 @@ flowchart LR
     page -- "HTTPS POST from the browser" --> sap
     sweep -- "imports sapling(), decide()" --> cli
     sweep -- "writes" --> data
+    evalr -- "imports evidence_text(), sapling(), decide()" --> cli
+    evalr -- "check() each edit" --> z3c
+    evalr -- "reads" --> corpus
+    evalr -- "writes results/eval.json" --> data
+    tests -- "pins every edit's Z3 result" --> corpus
     tests -- "imports" --> cli
     tests -- "imports" --> z3c
     tests -- "cross-checks" --> data
@@ -81,7 +88,7 @@ flowchart LR
     classDef ours fill:#052e16,stroke:#00D46A,color:#F4F4F5,stroke-width:2px
     classDef priv fill:#1c1917,stroke:#FCD34D,color:#F4F4F5,stroke-dasharray:4 3
     classDef ext fill:#27272A,stroke:#71717A,color:#F4F4F5
-    class cli,z3c,page,sweep,data,tests ours
+    class cli,z3c,page,sweep,evalr,corpus,data,tests ours
     class engine,portal priv
     class sap ext
 ```
@@ -92,6 +99,7 @@ flowchart LR
 | `z3check.py` | [z3check.py](../z3check.py) | Small, open re-implementation of the one Refinery check this demo needs. A test pins that it agrees with Refinery's saved evidence |
 | Live demo page | [scripts/page.html](../scripts/page.html), published at [docs/index.html](https://atiladeokegab.github.io/sapling-cobol-gate/) | Same evidence wording and gate rule as `gate.py`, in JavaScript; calls Sapling directly from the browser |
 | Sweep | [scripts/sweep.py](../scripts/sweep.py), [scripts/charts.py](../scripts/charts.py) | Six AI descriptions × two edits = 12 live calls; results in [results/sweep.json](../results/sweep.json) |
+| Held-out eval | [eval/run_eval.py](../eval/run_eval.py), [eval/corpus/](../eval/corpus/) | 12 programs × 5 edits × 3 descriptions = 180 live calls, scored against three baselines; resumable; results in [results/eval.json](../results/eval.json) |
 | Refinery engine | private | Produced [evidence/bug.json](../evidence/bug.json) and [evidence/refactor.json](../evidence/refactor.json) via [export_evidence.py](../export_evidence.py) |
 | Refinery portal | private, demo deployed on Cloud Run | The same check as a page inside Refinery's governance UI, so a reviewer runs it where they already sign changes off |
 | Sapling | Mubit / Banyan, Hugging Face endpoint | No key for the preview. Returns `status`, `raw_label`, `probabilities`, `timing_ms`, `model`, `release_stage`, `weights_sha256` |
@@ -134,12 +142,15 @@ Design notes on the components:
 
 - **Evidence is prose, not engine output.** Sapling is a natural-language verifier. Early runs
   that passed raw JSON from Refinery came back `unsure` for everything; one plain sentence per
-  fact (what changed, what the AI said, what Z3 found) gave Sapling something to rule on. The
-  `FORMAL` table in `gate.py` holds those sentences.
+  fact (what changed, what the AI said, what Z3 found) gave Sapling something to rule on.
+  `formal_text()` in `gate.py` states the Z3 result as a neutral fact with a concrete witness
+  ("with inputs …, WS-NET-PAY is 1 in the original and 2 in the modified program"). It reads both
+  z3check's and Refinery's evidence formats, and the live page carries the same function in
+  JavaScript, producing byte-identical evidence.
 - **The claim is fixed, the description varies.** We do not ask Sapling "is the AI telling the
   truth?". We ask it to rule on *"The AI-assisted change complies with the policy"*, and put the
-  AI's description inside the evidence. The policy's rules then connect the description
-  ("refactor") to the formal result ("counterexample") for Sapling to reason over.
+  AI's description inside the evidence. The policy's rules then connect each kind of description
+  ("no change", "this changes X per ticket") to the formal result for Sapling to reason over.
 - **The rule is in code, the judgement is not.** `decide()` only thresholds Sapling's output. No
   string matching on the description, no hand-written logic comparing the claim to the diff.
   Remove Sapling and the gate cannot tell a lie from a refactor.
@@ -163,12 +174,12 @@ sequenceDiagram
     AI-->>G: PAYROLL_ai_bug.cob + "Refactor... no change to any employee's pay."
     G->>Z: check(PAYROLL.cob, PAYROLL_ai_bug.cob)
     Z-->>G: COUNTEREXAMPLE: WS-BONUS=1, net pay 1 vs 2
-    G->>G: evidence_text(): paragraph, description, lines, formal result as prose
-    G->>S: POST {policy: 4 rules, evidence, claim: "complies with the policy"}
-    S-->>G: status unsure, raw_label violation, p(violation)=0.92, ~1 s
+    G->>G: evidence_text(): paragraph, description, lines, Z3 witness as prose
+    G->>S: POST {policy: 5 rules, evidence, claim: "complies with the policy"}
+    S-->>G: status unsure, raw_label violation, p(violation)≈0.93, ~1 s
     G->>G: decide(): violation ≥ 0.90 → BLOCK
     G-->>CI: exit 1, merge refused
-    Note over G,R: On the genuine refactor the same path returns<br/>supported 0.44 / insufficient 0.46, so HOLD (exit 2)
+    Note over G,R: On the genuine refactor the same path returns<br/>supported 0.40 / insufficient 0.51, so HOLD (exit 2)
     G-->>R: HOLD: route to a named reviewer, with Sapling's lean
 ```
 

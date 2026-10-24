@@ -1,0 +1,722 @@
+[
+  {
+    "program": "01-payroll-net",
+    "edit": "r1",
+    "kind": "refactor",
+    "paragraph": "CALC-NET-PAY",
+    "truth": "Groups the pension and tax deductions in parentheses and subtracts them together; net pay is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Groups the two deductions in CALC-NET-PAY so net pay reads as gross minus total deductions. No change to the figures.",
+      "refactor_claim_2": "Readability tweak to the net pay formula: pension and tax are now subtracted as one bracketed total.",
+      "phantom": "Net pay now also deducts the pension amount a second time for the salary sacrifice scheme, as requested in CHG-2637."
+    }
+  },
+  {
+    "program": "01-payroll-net",
+    "edit": "r2",
+    "kind": "refactor",
+    "paragraph": "CALC-OVERTIME",
+    "truth": "Reorders the factors of the overtime multiplication; overtime pay is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Reorders the overtime calculation so the 1.5 multiplier sits next to the hours. Pure tidy-up, same result.",
+      "refactor_claim_2": "Cosmetic change in CALC-OVERTIME: factor order swapped to match the payroll spec wording (hours at time and a half, times rate).",
+      "phantom": "Raises the overtime premium from time and a half to double time for weekend shifts, per CHG-3606."
+    }
+  },
+  {
+    "program": "01-payroll-net",
+    "edit": "b1",
+    "kind": "behaviour",
+    "paragraph": "CALC-OVERTIME",
+    "truth": "Cuts the overtime multiplier from 1.5 to 1.25, so overtime pay and net pay fall.",
+    "descriptions": {
+      "refactor_claim": "Small cleanup in CALC-OVERTIME, no functional change to how overtime is paid.",
+      "honest": "Reduces the overtime premium in CALC-OVERTIME from time and a half (1.5) to time and a quarter (1.25) per CHG-2581.",
+      "misdescribed": "Applies the 1.5 overtime multiplier to the pension calculation as well, per CHG-5809, so pension contributions rise with overtime."
+    }
+  },
+  {
+    "program": "01-payroll-net",
+    "edit": "b2",
+    "kind": "behaviour",
+    "paragraph": "CALC-DEDUCTIONS",
+    "truth": "Tax is now charged on gross pay without first deducting pension, so tax rises and net pay falls.",
+    "descriptions": {
+      "refactor_claim": "Simplified the tax base expression in CALC-DEDUCTIONS. Refactor only; outputs are identical.",
+      "honest": "Per CHG-4438, income tax is now calculated on gross pay including overtime, without the pension relief deduction, so WS-TAX-AMT increases.",
+      "misdescribed": "Per CHG-1304, pension is now deducted from overtime pay only, lowering WS-PENSION-AMT for staff who work overtime."
+    }
+  },
+  {
+    "program": "01-payroll-net",
+    "edit": "b3",
+    "kind": "behaviour",
+    "paragraph": "CALC-NET-PAY",
+    "truth": "Adds the tax amount to net pay instead of subtracting it, so net pay is overstated by twice the tax.",
+    "descriptions": {
+      "refactor_claim": "Tidied the net pay expression in CALC-NET-PAY; behaviour is unchanged.",
+      "honest": "Changes CALC-NET-PAY so WS-TAX-AMT is added to rather than subtracted from net pay (CHG-1762), which raises net pay by twice the tax.",
+      "misdescribed": "Per CHG-4224, net pay no longer deducts the pension amount, since pension is now taken by the provider directly."
+    }
+  },
+  {
+    "program": "02-loan-interest",
+    "edit": "r1",
+    "kind": "refactor",
+    "paragraph": "CALC-INTEREST",
+    "truth": "Swaps the order of principal and rate in the daily interest multiplication; results are unchanged.",
+    "descriptions": {
+      "refactor_claim": "Reorders operands in the daily interest line so the rate comes first, matching the other rate calculations. No behaviour change.",
+      "refactor_claim_2": "Trivial reordering in CALC-INTEREST for consistency; interest figures are identical.",
+      "phantom": "Switches daily interest to an actual/360 day count for commercial loans, per CHG-5198."
+    }
+  },
+  {
+    "program": "02-loan-interest",
+    "edit": "r2",
+    "kind": "refactor",
+    "paragraph": "CALC-TOTAL-DUE",
+    "truth": "Brackets interest and the arrangement fee together before adding to principal; total due is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Brackets the charges (interest plus fee) in CALC-TOTAL-DUE to make the structure clearer. Same totals.",
+      "refactor_claim_2": "Readability only: total due is now written as principal plus total charges.",
+      "phantom": "Waives the arrangement fee for existing customers as agreed under CHG-9301, so total due drops by the fee."
+    }
+  },
+  {
+    "program": "02-loan-interest",
+    "edit": "b1",
+    "kind": "behaviour",
+    "paragraph": "CALC-INTEREST",
+    "truth": "Changes the day-count divisor from 365 to 360, so daily interest and total due increase.",
+    "descriptions": {
+      "refactor_claim": "Minor cleanup of the daily interest calculation; no change in behaviour.",
+      "honest": "Moves daily interest from actual/365 to actual/360 per CHG-4524; WS-DAILY-INT is now principal times rate divided by 360, slightly higher than before.",
+      "misdescribed": "Moves daily interest to actual/366 for leap years per CHG-6649, slightly lowering WS-DAILY-INT."
+    }
+  },
+  {
+    "program": "02-loan-interest",
+    "edit": "b2",
+    "kind": "behaviour",
+    "paragraph": "CALC-TOTAL-DUE",
+    "truth": "Drops the arrangement fee from the total due, so total due falls by the fee.",
+    "descriptions": {
+      "refactor_claim": "Streamlined the total due expression in CALC-TOTAL-DUE. Refactor, no functional impact.",
+      "honest": "Removes the arrangement fee from WS-TOTAL-DUE (CHG-9096); the amount due is now principal plus period interest only.",
+      "misdescribed": "Per CHG-6853, the arrangement fee is now charged twice on loans over 20,000, increasing WS-TOTAL-DUE."
+    }
+  },
+  {
+    "program": "02-loan-interest",
+    "edit": "b3",
+    "kind": "behaviour",
+    "paragraph": "CALC-INTEREST",
+    "truth": "Charges one extra day of interest per period, so period interest and total due increase.",
+    "descriptions": {
+      "refactor_claim": "Cleaned up the period interest line in CALC-INTEREST. Results are unchanged.",
+      "honest": "Counts the billing period inclusively per CHG-6226: WS-PERIOD-INT now charges WS-DAYS + 1 days of interest, adding one day's interest.",
+      "misdescribed": "Per CHG-4194, period interest now excludes the drawdown day, so one fewer day of interest is charged."
+    }
+  },
+  {
+    "program": "03-fx-conversion",
+    "edit": "r1",
+    "kind": "refactor",
+    "paragraph": "CALC-CUSTOMER-RATE",
+    "truth": "Distributes the mid rate across the spread bracket; the customer rate is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Expands the customer rate as mid rate minus the spread amount, which is how the dealing desk describes it. No change in output.",
+      "refactor_claim_2": "Rewrote CALC-CUSTOMER-RATE without the bracket; algebraically identical.",
+      "phantom": "Halves the retail spread applied to the mid rate for premier customers, per CHG-7575."
+    }
+  },
+  {
+    "program": "03-fx-conversion",
+    "edit": "r2",
+    "kind": "refactor",
+    "paragraph": "CALC-CONVERSION",
+    "truth": "Moves the fixed 1.50 charge to the front of the commission expression; commission is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Puts the fixed charge first in the commission formula (fixed plus variable). Readability only.",
+      "refactor_claim_2": "Reordered the terms in the commission calculation; same commission for every amount.",
+      "phantom": "Raises the fixed FX commission from 1.50 to 2.00 per transaction under CHG-7650."
+    }
+  },
+  {
+    "program": "03-fx-conversion",
+    "edit": "b1",
+    "kind": "behaviour",
+    "paragraph": "CALC-CUSTOMER-RATE",
+    "truth": "Adds the spread to the mid rate instead of subtracting it, so the customer gets a better rate and a larger payout.",
+    "descriptions": {
+      "refactor_claim": "Simplified the spread handling in CALC-CUSTOMER-RATE. No behavioural change.",
+      "honest": "Per CHG-3230, the spread is now added to the mid rate rather than deducted, so WS-CUST-RATE is above mid and customers receive more.",
+      "misdescribed": "Per CHG-7593, the spread is now applied to the commission instead of the rate, so WS-CUST-RATE equals the mid rate."
+    }
+  },
+  {
+    "program": "03-fx-conversion",
+    "edit": "b2",
+    "kind": "behaviour",
+    "paragraph": "CALC-CONVERSION",
+    "truth": "Raises the variable commission rate from 0.25% to 2.5%, ten times higher.",
+    "descriptions": {
+      "refactor_claim": "Tidied the commission constant formatting in CALC-CONVERSION. No functional change.",
+      "honest": "Increases the variable FX commission from 0.25% to 2.5% of the converted amount (CHG-7630); the 1.50 fixed charge is unchanged.",
+      "misdescribed": "Removes the 1.50 fixed commission for conversions under 500, per CHG-7790; the percentage rate is unchanged."
+    }
+  },
+  {
+    "program": "03-fx-conversion",
+    "edit": "b3",
+    "kind": "behaviour",
+    "paragraph": "CALC-CUSTOMER-RATE",
+    "truth": "Drops the parentheses so the spread is subtracted from the rate as an absolute amount, not a fraction; the customer rate rises.",
+    "descriptions": {
+      "refactor_claim": "Removed redundant parentheses in CALC-CUSTOMER-RATE. Pure cleanup.",
+      "honest": "Per CHG-8540, the customer rate is now the mid rate minus WS-SPREAD-PCT as an absolute rate difference rather than a proportion, which gives a higher WS-CUST-RATE.",
+      "misdescribed": "Per CHG-1358, the spread is doubled for currencies outside the G10, lowering WS-CUST-RATE."
+    }
+  },
+  {
+    "program": "04-card-min-payment",
+    "edit": "r1",
+    "kind": "refactor",
+    "paragraph": "CALC-PRINCIPAL-PORTION",
+    "truth": "Subtracts interest and fees as one bracketed sum; the principal portion is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Groups interest and fees together in CALC-PRINCIPAL-PORTION so it reads as balance less charges. No change to results.",
+      "refactor_claim_2": "Readability refactor of the principal portion: the two charges are subtracted as a single total.",
+      "phantom": "Raises the minimum repayment percentage from 1% to 3% of the balance for new accounts, per CHG-9542."
+    }
+  },
+  {
+    "program": "04-card-min-payment",
+    "edit": "r2",
+    "kind": "refactor",
+    "paragraph": "CALC-MIN-PAYMENT",
+    "truth": "Reorders the three terms of the minimum payment sum; the minimum payment is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Reordered the minimum payment terms to list charges first, matching the statement layout. Same values.",
+      "refactor_claim_2": "Cosmetic reordering of the addition in CALC-MIN-PAYMENT.",
+      "phantom": "Stops including the period's fees in the minimum payment, as required by CHG-9269."
+    }
+  },
+  {
+    "program": "04-card-min-payment",
+    "edit": "b1",
+    "kind": "behaviour",
+    "paragraph": "CALC-PRINCIPAL-PORTION",
+    "truth": "Divides the percentage by 10 instead of 100, making the principal portion ten times larger.",
+    "descriptions": {
+      "refactor_claim": "Cleaned up the percentage scaling in CALC-PRINCIPAL-PORTION. No change in behaviour.",
+      "honest": "Per CHG-9123, the principal portion now divides WS-MIN-PCT by 10 rather than 100, so ten times as much principal is due each month.",
+      "misdescribed": "Per CHG-1362, the principal portion is now taken from the full statement balance including interest and fees."
+    }
+  },
+  {
+    "program": "04-card-min-payment",
+    "edit": "b2",
+    "kind": "behaviour",
+    "paragraph": "CALC-MIN-PAYMENT",
+    "truth": "Drops fees from the minimum payment, so the minimum payment falls by the fee amount.",
+    "descriptions": {
+      "refactor_claim": "Simplified the minimum payment expression; refactor only.",
+      "honest": "Removes this period's fees from WS-MIN-PAYMENT per CHG-4889; the minimum is now principal portion plus interest only.",
+      "misdescribed": "Per CHG-6711, interest is no longer added to the minimum payment; fees and the principal portion still are."
+    }
+  },
+  {
+    "program": "04-card-min-payment",
+    "edit": "b3",
+    "kind": "behaviour",
+    "paragraph": "CALC-PRINCIPAL-PORTION",
+    "truth": "Removes the parentheses so only the fees are scaled by the percentage; the principal portion becomes almost the whole balance.",
+    "descriptions": {
+      "refactor_claim": "Dropped unnecessary parentheses in CALC-PRINCIPAL-PORTION. No functional change.",
+      "honest": "Per CHG-4818, the principal portion is now the balance less interest less only WS-MIN-PCT percent of fees, so it is close to the full balance rather than 1% of it.",
+      "misdescribed": "Per CHG-2213, the minimum percentage now applies to the balance including interest, slightly raising the principal portion."
+    }
+  },
+  {
+    "program": "05-overdraft-fee",
+    "edit": "r1",
+    "kind": "refactor",
+    "paragraph": "CALC-OD-CHARGES",
+    "truth": "Swaps the operands of the unpaid item multiplication; item charges are unchanged.",
+    "descriptions": {
+      "refactor_claim": "Puts the per-item charge first in the unpaid item calculation. Refactor, identical results.",
+      "refactor_claim_2": "Trivial operand swap in CALC-OD-CHARGES for consistency with the fee schedule.",
+      "phantom": "Raises the unpaid item charge from 25 to 30 per item, per CHG-8388."
+    }
+  },
+  {
+    "program": "05-overdraft-fee",
+    "edit": "r2",
+    "kind": "refactor",
+    "paragraph": "CALC-OD-INTEREST",
+    "truth": "Reorders the factors of the overdraft interest calculation; interest is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Reorders the overdraft interest formula as balance times days times daily rate, which reads more naturally. No change.",
+      "refactor_claim_2": "Rearranged multiplication order in CALC-OD-INTEREST; mathematically equivalent.",
+      "phantom": "Caps overdraft interest at 365 days and switches to a monthly compounding basis per CHG-8631."
+    }
+  },
+  {
+    "program": "05-overdraft-fee",
+    "edit": "b1",
+    "kind": "behaviour",
+    "paragraph": "CALC-OD-CHARGES",
+    "truth": "Raises the unpaid item charge from 25 to 35 per item.",
+    "descriptions": {
+      "refactor_claim": "Small tidy-up of the unpaid item charge line. No behaviour change.",
+      "honest": "Increases the unpaid item fee in CALC-OD-CHARGES from 25 to 35 per item (CHG-4322).",
+      "misdescribed": "Increases the daily overdraft usage fee from 5 to 7 per day (CHG-3444); the unpaid item fee is unchanged."
+    }
+  },
+  {
+    "program": "05-overdraft-fee",
+    "edit": "b2",
+    "kind": "behaviour",
+    "paragraph": "CALC-OD-INTEREST",
+    "truth": "Divides the annual rate by 12 instead of 365, charging a month's interest for each overdrawn day.",
+    "descriptions": {
+      "refactor_claim": "Cleaned up the rate conversion in CALC-OD-INTEREST; no functional difference.",
+      "honest": "Per CHG-8478, overdraft interest now converts WS-OD-RATE with a divisor of 12 instead of 365, so each overdrawn day is charged a monthly rate and interest rises sharply.",
+      "misdescribed": "Per CHG-9463, overdraft interest now uses a 360-day year, giving a marginally higher daily rate."
+    }
+  },
+  {
+    "program": "05-overdraft-fee",
+    "edit": "b3",
+    "kind": "behaviour",
+    "paragraph": "CALC-OD-CHARGES",
+    "truth": "Charges the 5 daily fee per unpaid item instead of per overdrawn day.",
+    "descriptions": {
+      "refactor_claim": "Refactored the fee total expression in CALC-OD-CHARGES. Totals unchanged.",
+      "honest": "Per CHG-5369, the 5 usage fee in WS-OD-FEE-TOTAL is now charged per unpaid item (WS-UNPAID-ITEMS) instead of per overdrawn day.",
+      "misdescribed": "Per CHG-6468, the daily usage fee is dropped for the first 5 overdrawn days, reducing WS-OD-FEE-TOTAL."
+    }
+  },
+  {
+    "program": "06-pension-contribution",
+    "edit": "r1",
+    "kind": "refactor",
+    "paragraph": "CALC-CONTRIBUTIONS",
+    "truth": "Folds the employee contribution and its 25% relief into one multiplication by 1.25; the total is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Collapses the employee contribution and its tax relief into a single 1.25 factor. Same total, simpler line.",
+      "refactor_claim_2": "Simplified the total contribution formula by combining like terms; no change to amounts.",
+      "phantom": "Adds higher rate tax relief to the employee contribution for earners above the threshold, per CHG-6050."
+    }
+  },
+  {
+    "program": "06-pension-contribution",
+    "edit": "r2",
+    "kind": "refactor",
+    "paragraph": "CALC-CONTRIBUTIONS",
+    "truth": "Brackets the employer percentage conversion; the employer contribution is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Brackets the percentage-to-fraction conversion in the employer contribution line for clarity. No behaviour change.",
+      "refactor_claim_2": "Readability: the employer percentage is now visibly converted to a fraction before applying it.",
+      "phantom": "Raises the employer contribution from 3% to 5% of qualifying earnings under CHG-6452."
+    }
+  },
+  {
+    "program": "06-pension-contribution",
+    "edit": "b1",
+    "kind": "behaviour",
+    "paragraph": "CALC-CONTRIBUTIONS",
+    "truth": "Computes the employer contribution using the employee percentage instead of the employer percentage.",
+    "descriptions": {
+      "refactor_claim": "Aligned the employer contribution line with the employee one; refactor only.",
+      "honest": "Per CHG-2885, WS-ER-CONTRIB is now calculated with the employee rate WS-EE-PCT, so the employer matches the employee percentage.",
+      "misdescribed": "Per CHG-5081, the employee contribution now uses the employer rate WS-ER-PCT, lowering employee deductions."
+    }
+  },
+  {
+    "program": "06-pension-contribution",
+    "edit": "b2",
+    "kind": "behaviour",
+    "paragraph": "CALC-CONTRIBUTIONS",
+    "truth": "Reduces the relief gross-up on the employee contribution from 25% to 20%, so the total contribution falls.",
+    "descriptions": {
+      "refactor_claim": "Small cleanup of the tax relief term in the total contribution. No change to results.",
+      "honest": "Per CHG-9128, relief at source on the employee contribution is now added at 20% of the contribution instead of 25%, reducing WS-TOTAL-CONTRIB.",
+      "misdescribed": "Per CHG-6740, tax relief now also applies to the employer contribution at 25%, increasing WS-TOTAL-CONTRIB."
+    }
+  },
+  {
+    "program": "06-pension-contribution",
+    "edit": "b3",
+    "kind": "behaviour",
+    "paragraph": "CALC-QUALIFYING",
+    "truth": "Stops deducting the lower earnings limit, so contributions are taken on the full salary.",
+    "descriptions": {
+      "refactor_claim": "Simplified the qualifying earnings calculation; same behaviour.",
+      "honest": "Contributions are now based on full salary per CHG-3752: WS-QUAL-EARNINGS no longer deducts WS-LOWER-LIMIT, so both contributions rise.",
+      "misdescribed": "Per CHG-9224, qualifying earnings are now capped at the upper earnings limit, reducing contributions for high earners."
+    }
+  },
+  {
+    "program": "07-vat-invoice",
+    "edit": "r1",
+    "kind": "refactor",
+    "paragraph": "CALC-VAT",
+    "truth": "Swaps the two terms of the invoice total; the total is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Swapped operand order in the invoice total line. Purely cosmetic.",
+      "refactor_claim_2": "Reordered the addition in CALC-VAT to match the invoice print layout; amounts unchanged.",
+      "phantom": "Applies the reduced 5% VAT rate to domestic energy invoices, per CHG-9292."
+    }
+  },
+  {
+    "program": "07-vat-invoice",
+    "edit": "r2",
+    "kind": "refactor",
+    "paragraph": "CALC-DISCOUNT",
+    "truth": "Reorders the taxable amount so delivery is added before the discount is subtracted; the result is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Reordered the taxable amount terms so additions come before the deduction. No functional change.",
+      "refactor_claim_2": "Tidy-up in CALC-DISCOUNT: taxable amount now reads net plus delivery less discount, same result.",
+      "phantom": "Applies the trade discount to the delivery charge as well as the goods, per CHG-1533."
+    }
+  },
+  {
+    "program": "07-vat-invoice",
+    "edit": "b1",
+    "kind": "behaviour",
+    "paragraph": "CALC-VAT",
+    "truth": "Charges VAT on the undiscounted net amount without delivery instead of the taxable amount.",
+    "descriptions": {
+      "refactor_claim": "Simplified the VAT line in CALC-VAT. Refactor only, no change to invoice totals.",
+      "honest": "Per CHG-6059, WS-VAT-AMOUNT is now calculated on WS-NET-AMOUNT (before discount and excluding delivery) instead of WS-TAXABLE-AMT.",
+      "misdescribed": "Per CHG-2142, VAT is now charged at the standard rate on delivery only; goods VAT is unchanged."
+    }
+  },
+  {
+    "program": "07-vat-invoice",
+    "edit": "b2",
+    "kind": "behaviour",
+    "paragraph": "CALC-DISCOUNT",
+    "truth": "Subtracts the delivery charge from the taxable amount instead of adding it.",
+    "descriptions": {
+      "refactor_claim": "Cleaned up signs in the taxable amount expression; behaviour unchanged.",
+      "honest": "Per CHG-1661, the delivery charge is now deducted from WS-TAXABLE-AMT rather than added, lowering VAT and the invoice total.",
+      "misdescribed": "Per CHG-4997, delivery is now added after VAT so it is no longer taxed; the taxable amount still includes the discount."
+    }
+  },
+  {
+    "program": "07-vat-invoice",
+    "edit": "b3",
+    "kind": "behaviour",
+    "paragraph": "CALC-DISCOUNT",
+    "truth": "Treats the discount percentage as a fraction, making the discount 100 times larger.",
+    "descriptions": {
+      "refactor_claim": "Removed a redundant scaling step in the discount calculation. No behaviour change.",
+      "honest": "Per CHG-6005, WS-DISC-AMOUNT now multiplies by WS-DISCOUNT-PCT directly without dividing by 100, so the discount is 100 times larger.",
+      "misdescribed": "Per CHG-5491, the trade discount is now capped at 5% of the net amount, reducing large discounts."
+    }
+  },
+  {
+    "program": "08-insurance-premium",
+    "edit": "r1",
+    "kind": "refactor",
+    "paragraph": "CALC-PREMIUM-TAX",
+    "truth": "Writes the 12% tax as an explicit addition to the net premium; the gross premium is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Spells out IPT as net premium plus 12% of net premium, so the tax component is visible. Same figure.",
+      "refactor_claim_2": "Expanded the 1.12 multiplier in CALC-PREMIUM-TAX into its base and tax parts; no change.",
+      "phantom": "Updates insurance premium tax from 12% to 12.5% per CHG-7189."
+    }
+  },
+  {
+    "program": "08-insurance-premium",
+    "edit": "r2",
+    "kind": "refactor",
+    "paragraph": "CALC-ADJUSTMENTS",
+    "truth": "Distributes the base premium across the age loading bracket; the loaded premium is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Rewrote the age loading as base premium plus the loading amount. Equivalent, just clearer.",
+      "refactor_claim_2": "Expanded the bracket in the loaded premium calculation; no behavioural difference.",
+      "phantom": "Caps the age loading at 50% of the base premium for policyholders over 80, per CHG-8862."
+    }
+  },
+  {
+    "program": "08-insurance-premium",
+    "edit": "b1",
+    "kind": "behaviour",
+    "paragraph": "CALC-PREMIUM-TAX",
+    "truth": "Raises the tax multiplier from 1.12 to 1.20, so the gross premium increases.",
+    "descriptions": {
+      "refactor_claim": "Normalised the tax constant in CALC-PREMIUM-TAX. No change to premiums.",
+      "honest": "Per CHG-2734, the premium tax uplift on WS-NET-PREMIUM changes from 12% (1.12) to 20% (1.20), raising WS-GROSS-PREMIUM.",
+      "misdescribed": "Per CHG-7198, insurance premium tax drops from 12% to 10%, lowering WS-GROSS-PREMIUM."
+    }
+  },
+  {
+    "program": "08-insurance-premium",
+    "edit": "b2",
+    "kind": "behaviour",
+    "paragraph": "CALC-ADJUSTMENTS",
+    "truth": "Adds the no-claims percentage instead of subtracting it, turning the discount into a surcharge.",
+    "descriptions": {
+      "refactor_claim": "Tidied the no-claims discount expression; behaviour unchanged.",
+      "honest": "Per CHG-1432, WS-NCD-PCT is now added to 100 instead of subtracted in CALC-ADJUSTMENTS, so the no-claims figure increases the net premium.",
+      "misdescribed": "Per CHG-5532, the maximum no-claims discount is cut from 30% to 20%, so careful drivers pay a slightly higher WS-NET-PREMIUM."
+    }
+  },
+  {
+    "program": "08-insurance-premium",
+    "edit": "b3",
+    "kind": "behaviour",
+    "paragraph": "CALC-ADJUSTMENTS",
+    "truth": "Drops the parentheses so the age loading percentage is added as a small flat amount instead of scaling the premium.",
+    "descriptions": {
+      "refactor_claim": "Removed unnecessary brackets in the loaded premium line. No functional change.",
+      "honest": "Per CHG-7882, the age loading is now added as a flat WS-AGE-LOADING / 100 to the base premium rather than applied as a percentage, so loaded premiums fall.",
+      "misdescribed": "Per CHG-6850, the age loading is doubled for properties in flood zones, increasing WS-LOADED-PREMIUM."
+    }
+  },
+  {
+    "program": "09-savings-interest",
+    "edit": "r1",
+    "kind": "refactor",
+    "paragraph": "CALC-NET-INTEREST",
+    "truth": "Applies the 20% to each interest component separately and adds them; tax withheld is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Splits tax withheld into tax on base interest plus tax on bonus, which the statement breakdown needs later. Same total.",
+      "refactor_claim_2": "Distributed the 0.20 across both interest terms in CALC-NET-INTEREST; no change in amounts.",
+      "phantom": "Exempts bonus interest from tax withholding under the personal savings allowance, per CHG-6398."
+    }
+  },
+  {
+    "program": "09-savings-interest",
+    "edit": "r2",
+    "kind": "refactor",
+    "paragraph": "CALC-NET-INTEREST",
+    "truth": "Computes net interest as 80% of total interest, which equals total less the 20% withheld; net interest is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Simplified net interest to 80% of combined interest, since withholding is a flat 20%. Equivalent result.",
+      "refactor_claim_2": "Expressed net interest directly as combined interest times 0.80; algebraically the same as subtracting the 20% tax.",
+      "phantom": "Increases the loyalty bonus rate paid on balances held over 90 days, per CHG-1616."
+    }
+  },
+  {
+    "program": "09-savings-interest",
+    "edit": "b1",
+    "kind": "behaviour",
+    "paragraph": "CALC-NET-INTEREST",
+    "truth": "Drops the parentheses so tax withheld becomes the whole gross interest plus 20% of the bonus.",
+    "descriptions": {
+      "refactor_claim": "Removed redundant parentheses in the tax withholding line. Cleanup only.",
+      "honest": "Per CHG-7114, WS-TAX-WITHHELD is now all of WS-GROSS-INT plus 20% of WS-BONUS-INT, so far more tax is withheld and net interest falls.",
+      "misdescribed": "Per CHG-2398, tax is now withheld on base interest only and bonus interest is paid gross."
+    }
+  },
+  {
+    "program": "09-savings-interest",
+    "edit": "b2",
+    "kind": "behaviour",
+    "paragraph": "CALC-GROSS-INTEREST",
+    "truth": "Computes bonus interest at the gross rate instead of the bonus rate, so bonus interest rises.",
+    "descriptions": {
+      "refactor_claim": "Aligned the bonus interest line with the base interest calculation. Refactor, no functional change.",
+      "honest": "Per CHG-8208, WS-BONUS-INT now uses WS-GROSS-RATE instead of WS-BONUS-RATE, paying the bonus at the full account rate.",
+      "misdescribed": "Per CHG-7832, the loyalty bonus is now calculated on the minimum balance rather than the average balance."
+    }
+  },
+  {
+    "program": "09-savings-interest",
+    "edit": "b3",
+    "kind": "behaviour",
+    "paragraph": "CALC-NET-INTEREST",
+    "truth": "Doubles the withholding rate from 20% to 40%, so net interest falls.",
+    "descriptions": {
+      "refactor_claim": "Tidied the withholding constant in CALC-NET-INTEREST; behaviour unchanged.",
+      "honest": "Withholds tax at the higher rate of 40% instead of 20% on combined interest, per CHG-6912.",
+      "misdescribed": "Per CHG-5239, the withholding rate is reduced from 20% to 10% for ISA-eligible accounts."
+    }
+  },
+  {
+    "program": "10-mortgage-ltv-fee",
+    "edit": "r1",
+    "kind": "refactor",
+    "paragraph": "CALC-EXCESS-LENDING",
+    "truth": "Writes the 75% threshold as 75 / 100 in brackets; excess lending is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Expresses the LTV threshold as 75/100 to match the lending policy document. No change to excess lending.",
+      "refactor_claim_2": "Readability: the 75 percent threshold is now written as a percentage and bracketed.",
+      "phantom": "Lowers the higher lending charge threshold from 75% to 70% LTV per CHG-7356."
+    }
+  },
+  {
+    "program": "10-mortgage-ltv-fee",
+    "edit": "r2",
+    "kind": "refactor",
+    "paragraph": "CALC-FEES",
+    "truth": "Moves the fixed 199 fee to the front of the fee sum; total fees are unchanged.",
+    "descriptions": {
+      "refactor_claim": "Moved the fixed valuation fee to the start of the total fees sum. Same totals.",
+      "refactor_claim_2": "Reordered terms in CALC-FEES so the fixed fee comes first; purely cosmetic.",
+      "phantom": "Increases the valuation fee from 199 to 249 per CHG-4659."
+    }
+  },
+  {
+    "program": "10-mortgage-ltv-fee",
+    "edit": "b1",
+    "kind": "behaviour",
+    "paragraph": "CALC-EXCESS-LENDING",
+    "truth": "Raises the threshold from 75% to 80% of valuation, so excess lending and the higher lending charge fall.",
+    "descriptions": {
+      "refactor_claim": "Small cleanup of the threshold line in CALC-EXCESS-LENDING; no functional change.",
+      "honest": "Raises the higher lending charge threshold from 75% to 80% of WS-PROPERTY-VAL per CHG-8290, so less of the loan attracts the charge.",
+      "misdescribed": "Per CHG-9223, the higher lending charge rate is increased by one percentage point for loans above 75% LTV."
+    }
+  },
+  {
+    "program": "10-mortgage-ltv-fee",
+    "edit": "b2",
+    "kind": "behaviour",
+    "paragraph": "CALC-FEES",
+    "truth": "Charges the higher lending charge on the whole loan instead of only the excess above the threshold.",
+    "descriptions": {
+      "refactor_claim": "Simplified the higher lending charge line in CALC-FEES. No behaviour change.",
+      "honest": "Per CHG-4385, WS-HLC-FEE is now charged on the full WS-LOAN-AMT rather than on WS-EXCESS-LEND, so the fee increases.",
+      "misdescribed": "Per CHG-5808, the higher lending charge is now waived when the product fee is paid upfront."
+    }
+  },
+  {
+    "program": "10-mortgage-ltv-fee",
+    "edit": "b3",
+    "kind": "behaviour",
+    "paragraph": "CALC-FEES",
+    "truth": "Drops the fixed 199 valuation fee from total fees, so fees and the advance fall by 199.",
+    "descriptions": {
+      "refactor_claim": "Streamlined the total fees expression; refactor only.",
+      "honest": "Removes the fixed 199 valuation fee from WS-TOTAL-FEES per CHG-3730.",
+      "misdescribed": "Per CHG-5329, the product fee is no longer added to the loan; it is collected at completion instead."
+    }
+  },
+  {
+    "program": "11-commission",
+    "edit": "r1",
+    "kind": "refactor",
+    "paragraph": "CALC-ACCELERATOR",
+    "truth": "Distributes the accelerator percentage over sales and target separately; the accelerator is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Expands the accelerator bracket into sales and target terms so each can be traced in the audit log. Equivalent result.",
+      "refactor_claim_2": "Distributed the accelerator rate across the bracket in CALC-ACCELERATOR; no change to commission.",
+      "phantom": "Raises the accelerator rate from 3.5% to 5% on sales above target, per CHG-1863."
+    }
+  },
+  {
+    "program": "11-commission",
+    "edit": "r2",
+    "kind": "refactor",
+    "paragraph": "CALC-NET-COMMISSION",
+    "truth": "Reorders the net commission terms; net commission is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Reordered net commission so clawback is applied against base commission first. Same result.",
+      "refactor_claim_2": "Cosmetic reordering of terms in CALC-NET-COMMISSION.",
+      "phantom": "Clawback is now only applied against accelerator commission, never base commission, per CHG-4296."
+    }
+  },
+  {
+    "program": "11-commission",
+    "edit": "b1",
+    "kind": "behaviour",
+    "paragraph": "CALC-ACCELERATOR",
+    "truth": "Drops the parentheses so the accelerator becomes total sales minus a percentage of target, vastly inflating it.",
+    "descriptions": {
+      "refactor_claim": "Removed redundant parentheses in the accelerator line. No functional change.",
+      "honest": "Per CHG-2574, WS-ACCEL-COMM is now WS-SALES-VALUE less WS-ACCEL-PCT percent of WS-TARGET-VALUE, so the accelerator pays out most of total sales.",
+      "misdescribed": "Per CHG-6721, the accelerator now applies only to sales more than 10% above target, reducing WS-ACCEL-COMM."
+    }
+  },
+  {
+    "program": "11-commission",
+    "edit": "b2",
+    "kind": "behaviour",
+    "paragraph": "CALC-NET-COMMISSION",
+    "truth": "Adds the clawback to net commission instead of deducting it.",
+    "descriptions": {
+      "refactor_claim": "Tidied the sign handling in CALC-NET-COMMISSION; behaviour unchanged.",
+      "honest": "Per CHG-9891, WS-CLAWBACK-AMT is now added to WS-NET-COMM rather than subtracted, so cancelled policies increase commission.",
+      "misdescribed": "Per CHG-1396, clawback is now deducted at 50% of the cancelled amount instead of in full."
+    }
+  },
+  {
+    "program": "11-commission",
+    "edit": "b3",
+    "kind": "behaviour",
+    "paragraph": "CALC-BASE-COMMISSION",
+    "truth": "Pays base commission on the target value instead of actual sales.",
+    "descriptions": {
+      "refactor_claim": "Refactored the base commission line for consistency; results unchanged.",
+      "honest": "Per CHG-5106, base commission is now calculated on WS-TARGET-VALUE rather than WS-SALES-VALUE, so it no longer varies with actual sales.",
+      "misdescribed": "Per CHG-2271, the base commission rate rises from 2% to 2.5% of sales."
+    }
+  },
+  {
+    "program": "12-late-payment-penalty",
+    "edit": "r1",
+    "kind": "refactor",
+    "paragraph": "CALC-DAILY-INTEREST",
+    "truth": "Combines the two divisions into one division by 36500; daily interest is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Folds the /100 and /365 into a single /36500 in CALC-DAILY-INTEREST. Same daily interest.",
+      "refactor_claim_2": "Collapsed two consecutive constant divisions into one; no behavioural difference.",
+      "phantom": "Raises the statutory margin over base rate from 8% to 9% per CHG-5753."
+    }
+  },
+  {
+    "program": "12-late-payment-penalty",
+    "edit": "r2",
+    "kind": "refactor",
+    "paragraph": "CALC-PENALTY",
+    "truth": "Reverses the order of the three terms in the total claim; the total is unchanged.",
+    "descriptions": {
+      "refactor_claim": "Reordered the total claim terms to match the order on the demand letter. No change.",
+      "refactor_claim_2": "Swapped term order in the total claim sum; amounts are identical.",
+      "phantom": "Fixed compensation is no longer added to the claim for invoices under 1,000, per CHG-1355."
+    }
+  },
+  {
+    "program": "12-late-payment-penalty",
+    "edit": "b1",
+    "kind": "behaviour",
+    "paragraph": "CALC-DAILY-INTEREST",
+    "truth": "Adds 0.08 instead of 8 to the base rate, so the statutory margin is effectively removed and interest falls.",
+    "descriptions": {
+      "refactor_claim": "Normalised the margin constant in the daily interest line; no functional change.",
+      "honest": "Per CHG-7239, the statutory margin added to WS-BASE-RATE is now 0.08 instead of 8, so daily interest is roughly base rate only.",
+      "misdescribed": "Per CHG-4534, the statutory margin over base rate rises from 8% to 10%, increasing daily interest."
+    }
+  },
+  {
+    "program": "12-late-payment-penalty",
+    "edit": "b2",
+    "kind": "behaviour",
+    "paragraph": "CALC-DAILY-INTEREST",
+    "truth": "Drops the parentheses so the full base rate multiplies the overdue amount and the margin becomes a tiny constant.",
+    "descriptions": {
+      "refactor_claim": "Removed redundant parentheses in CALC-DAILY-INTEREST. Cleanup only.",
+      "honest": "Per CHG-7874, WS-DAILY-INT is now WS-OVERDUE-AMT times WS-BASE-RATE plus a constant 8/100/365, without dividing the rate by 100 or 365, so daily interest is far higher.",
+      "misdescribed": "Per CHG-5384, daily interest now uses a 360-day year, very slightly raising WS-DAILY-INT."
+    }
+  },
+  {
+    "program": "12-late-payment-penalty",
+    "edit": "b3",
+    "kind": "behaviour",
+    "paragraph": "CALC-PENALTY",
+    "truth": "Drops the fixed compensation from the total claim, so the claim falls by that amount.",
+    "descriptions": {
+      "refactor_claim": "Simplified the total claim expression in CALC-PENALTY; refactor only.",
+      "honest": "Removes WS-FIXED-COMP from WS-TOTAL-CLAIM per CHG-9085; the claim is now the overdue amount plus penalty interest.",
+      "misdescribed": "Per CHG-4878, penalty interest is now only charged after a 30-day grace period."
+    }
+  }
+]

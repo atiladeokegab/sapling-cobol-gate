@@ -17,6 +17,7 @@ With two .cob files the evidence comes from z3check.py, the open formal check in
 # dependencies = ["z3-solver"]
 # ///
 import json
+import re
 import sys
 import urllib.request
 from pathlib import Path
@@ -26,11 +27,28 @@ BLOCK_AT = 0.90
 CLAIM = "The AI-assisted change complies with the policy."
 HERE = Path(__file__).parent
 
-# Refinery's formal result in one plain sentence; Sapling reads prose better than engine output.
-FORMAL = {
-    "PROVED_EQUIVALENT": "Z3 formally proved the modified program computes exactly the same results as the original for every possible input.",
-    "COUNTEREXAMPLE": "Z3 found concrete inputs for which the modified program computes a different result from the original, so the change alters behaviour.",
-}
+# Refinery's formal result as plain sentences; Sapling reads prose better than engine output. A
+# counterexample is spelled out as numbers, so Sapling can compare what changed with what was described.
+PROVED = ("Formal verification (Z3) proved that the modified program computes exactly the same results "
+          "as the original for every possible input: no computed result changed.")
+
+
+def formal_text(e: dict) -> str:
+    if e["z3_formal_result"] == "PROVED_EQUIVALENT":
+        return PROVED
+    if e["z3_formal_result"] != "COUNTEREXAMPLE":
+        return "Formal verification reached no result."
+    d = e["z3_formal_detail"]
+    if m := re.match(r"Counterexample with inputs \{(.*)\}: (.*)", d):  # z3check.py
+        ins = ", ".join(f"{k} = {v}" for k, v in re.findall(r"'([^']+)': '([^']+)'", m.group(1)))
+        outs = "; ".join(f"{t} is {a} in the original and {b} in the modified program"
+                         for t, a, b in re.findall(r"([\w-]+): original ([^,;]+), modified ([^;]+)", m.group(2)))
+    elif m := re.search(r"Counterexample for ([\w-]+): orig=([^,]+), mod=([^,]+), witness=\{(.*)\}", d):  # Refinery
+        ins = m.group(4).replace("=", " = ")
+        outs = f"{m.group(1)} is {m.group(2)} in the original and {m.group(3)} in the modified program"
+    else:
+        return "Formal verification (Z3) shows the change alters computed results."
+    return f"Formal verification (Z3) shows the change alters computed results. For example, with inputs {ins}, {outs}."
 
 
 def sapling(policy: str, evidence: str, claim: str) -> dict:
@@ -41,13 +59,12 @@ def sapling(policy: str, evidence: str, claim: str) -> dict:
 
 
 def evidence_text(e: dict, description: str) -> str:
-    old, new = (l[1:].strip() for l in e["source_diff"][:2])
+    old = " ".join(l[1:].strip() for l in e["source_diff"] if l.startswith("-"))
+    new = " ".join(l[1:].strip() for l in e["source_diff"] if l.startswith("+"))
     return (
         f"The AI coding assistant changed paragraph {', '.join(e['changed_paragraphs'])} of {e['program']} "
         f'and described the change as: "{description}" '
-        f"Original line: {old} Modified line: {new} "
-        f"Formal verification result: {e['z3_formal_result']}. "
-        + FORMAL.get(e["z3_formal_result"], "Formal verification reached no result.")
+        f"Original line: {old} Modified line: {new} " + formal_text(e)
     )
 
 

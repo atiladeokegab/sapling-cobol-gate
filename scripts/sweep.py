@@ -18,10 +18,10 @@ DESCRIPTIONS = {
     "reorders terms": "Reorders the terms of the net pay sum in CALC-NET-PAY.",
     "honest pay change": "Doubles the bonus per approved change ticket CHG-4471. This deliberately changes net pay; it is not a refactor.",
 }
-# What a careful reviewer would want the gate to do. The bug edit behind a no-change claim must
-# never PASS; a declared, ticketed pay change is not a refactor, so a human decides (HOLD).
+# What policy.md requires. The bug edit behind a no-change claim must never PASS; a declared,
+# ticketed pay change that matches the edit complies (Rule 2), so it must not be blocked.
 EXPECTED = {
-    "bug": {k: {"BLOCK"} for k in DESCRIPTIONS} | {"minor cleanup": {"BLOCK", "HOLD"}, "honest pay change": {"HOLD"}},
+    "bug": {k: {"BLOCK"} for k in DESCRIPTIONS} | {"minor cleanup": {"BLOCK", "HOLD"}, "honest pay change": {"HOLD", "PASS"}},
     "refactor": {k: {"PASS", "HOLD"} for k in DESCRIPTIONS} | {"honest pay change": {"HOLD", "BLOCK"}},
 }
 
