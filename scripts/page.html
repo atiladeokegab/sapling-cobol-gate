@@ -1,0 +1,136 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Refinery · Sapling change gate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#09090B;--panel:#111113;--ink:#F4F4F5;--mute:#A1A1AA;--faint:#27272A;--green:#00D46A;--red:#F87171;--amber:#FCD34D;--grey:#71717A}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,sans-serif}
+header{display:flex;align-items:center;gap:14px;padding:16px 28px;border-bottom:1px solid var(--faint)}
+.logo{font-weight:700;font-size:20px;letter-spacing:-.3px}.logo i{font-style:normal;position:relative}.logo i:after{content:"";position:absolute;left:50%;top:-1px;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:var(--green)}
+.crumb{color:var(--mute)}.pill{margin-left:auto;font-size:13px;color:var(--mute);border:1px solid var(--faint);padding:4px 10px;border-radius:99px}
+main{max-width:1400px;margin:0 auto;padding:22px 28px 60px;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:22px}
+.card{background:var(--panel);border:1px solid var(--faint);border-radius:14px;padding:18px 20px}
+h2{font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:var(--mute);margin:0 0 12px;font-weight:600}
+.tabs{display:flex;gap:8px;margin-bottom:14px}.tabs button{background:none;border:1px solid var(--faint);color:var(--mute);padding:8px 14px;border-radius:9px;font:600 14px Inter;cursor:pointer}
+.tabs button.on{border-color:var(--green);color:var(--ink)}
+.code{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}.code pre{margin:0;font:12.5px/1.55 "JetBrains Mono",monospace;background:#0C0C0E;border:1px solid var(--faint);border-radius:10px;padding:10px 0;overflow:auto;max-height:175px}
+.code pre span{display:block;padding:0 12px;white-space:pre}.code .del{background:#3F121288;color:#FCA5A5}.code .add{background:#14532D88;color:#86EFAC}
+.code .lbl{font-size:12px;color:var(--mute);margin:0 0 6px}
+textarea{width:100%;background:#0C0C0E;color:var(--ink);border:1px solid var(--faint);border-radius:10px;padding:10px 12px;font:15px/1.5 Inter;resize:vertical}
+textarea:focus{outline:none;border-color:var(--green)}
+.ev{display:flex;gap:12px;align-items:flex-start}.badge{font:700 13px "JetBrains Mono";padding:5px 10px;border-radius:7px;white-space:nowrap}
+.b-red{background:#3F1212;color:#FCA5A5}.b-green{background:#0F2E1D;color:#86EFAC}
+.small{font-size:13px;color:var(--mute)}.mono{font-family:"JetBrains Mono",monospace;font-size:12.5px}
+.run{width:100%;margin-top:4px;padding:16px;border:0;border-radius:12px;background:var(--green);color:#04210F;font:800 18px Inter;cursor:pointer;letter-spacing:.2px}
+.run:disabled{opacity:.6;cursor:wait}
+.bars{display:grid;gap:12px;margin-top:6px}.bar{display:grid;grid-template-columns:150px minmax(0,1fr) 54px;align-items:center;gap:12px}
+.track{height:30px;background:#18181B;border-radius:8px;overflow:hidden}.fill{height:100%;width:0;border-radius:8px;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.val{font:600 16px "JetBrains Mono";text-align:right}
+.verdict{position:relative;min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.stamp{font:800 64px Inter;letter-spacing:2px;padding:6px 30px;border:6px solid;border-radius:16px;transform:rotate(-4deg) scale(2.6);opacity:0}
+.stamp.go{animation:st .35s cubic-bezier(.2,.9,.3,1.2) forwards}@keyframes st{to{transform:rotate(-4deg) scale(1);opacity:1}}
+.why{font-weight:600;opacity:0;transition:opacity .4s .4s}.why.go{opacity:1}
+.meta{font:12px "JetBrains Mono";color:var(--grey);margin-top:12px;word-break:break-all}
+.right{display:grid;gap:22px;align-content:start}.left{display:grid;gap:22px;align-content:start}
+details summary{cursor:pointer;color:var(--mute);font-size:13px}details pre{white-space:pre-wrap;font:12px/1.5 "JetBrains Mono";color:var(--mute)}
+@media(max-width:960px){main{grid-template-columns:1fr;padding:16px}.code{grid-template-columns:1fr}}
+</style></head><body>
+<header><span class="logo">Ref<i>ı</i>nery</span><span class="crumb">/ change gate / PAYROLL.cob</span><span class="pill">Banyan Sapling · live</span></header>
+<main>
+<section class="left">
+  <div class="card">
+    <h2>AI-assisted change</h2>
+    <div class="tabs"><button data-k="bug" class="on">Edit 1 · CALC-NET-PAY</button><button data-k="refactor">Edit 2 · CALC-NET-PAY</button></div>
+    <div class="code"><div><p class="lbl">Original · PAYROLL.cob</p><pre id="orig"></pre></div><div><p class="lbl">AI-modified</p><pre id="mod"></pre></div></div>
+  </div>
+  <div class="card">
+    <h2>The AI tool's description of its change</h2>
+    <textarea id="desc" rows="2"></textarea>
+    <p class="small" style="margin:8px 0 0">Edit it and run again: Sapling re-judges whatever the AI claims.</p>
+  </div>
+  <div class="card">
+    <h2>Refinery audit evidence</h2>
+    <div class="ev"><span id="z3" class="badge"></span><div><div id="z3plain"></div><div class="small mono" id="z3detail" style="margin-top:6px"></div></div></div>
+  </div>
+</section>
+<section class="right">
+  <div class="card">
+    <h2>Change-control policy</h2>
+    <textarea id="policy" rows="6"></textarea>
+    <p class="small" style="margin:8px 0 0">Claim under test: <b id="claim"></b></p>
+  </div>
+  <button class="run" id="run">Run Sapling check</button>
+  <div class="card">
+    <h2>Sapling verdict</h2>
+    <div class="bars" id="bars"></div>
+    <div class="verdict"><div class="stamp" id="stamp"></div><div class="why" id="why"></div></div>
+    <div class="meta" id="meta">Not run yet.</div>
+    <details><summary>Exact input sent to Sapling</summary><pre id="sent"></pre></details>
+  </div>
+</section>
+</main>
+<script>
+const DATA = __DATA__;
+// Same logic as gate.py: evidence wording, claim and the asymmetric gate.
+const SAPLING = "https://6adbee0669a00298cd4774c9.endpoints.huggingface.cloud", BLOCK_AT = 0.90;
+const CLAIM = "The AI-assisted change complies with the policy.";
+const FORMAL = {
+  PROVED_EQUIVALENT: "Z3 formally proved the modified program computes exactly the same results as the original for every possible input.",
+  COUNTEREXAMPLE: "Z3 found concrete inputs for which the modified program computes a different result from the original, so the change alters behaviour.",
+};
+const DEFAULT_DESC = "Refactor of CALC-NET-PAY for readability. Reorders terms only; no change to any employee's pay.";
+const LABELS = [["violation", "violation", "var(--red)"], ["supported", "supported", "var(--green)"],
+                ["insufficient_information", "insufficient info", "var(--amber)"], ["inconsistent_context", "inconsistent", "var(--grey)"]];
+const $ = (id) => document.getElementById(id);
+let cur = "bug";
+
+function evidenceText(e, d) {
+  const [o, n] = e.source_diff.slice(0, 2).map((l) => l.slice(1).trim());
+  return `The AI coding assistant changed paragraph ${e.changed_paragraphs.join(", ")} of ${e.program} ` +
+    `and described the change as: "${d}" Original line: ${o} Modified line: ${n} ` +
+    `Formal verification result: ${e.z3_formal_result}. ` + (FORMAL[e.z3_formal_result] || "Formal verification reached no result.");
+}
+function decide(r) {
+  const p = r.probabilities;
+  if (r.raw_label === "violation" && p.violation >= BLOCK_AT) return ["BLOCK", "var(--red)", `Policy violation (${p.violation.toFixed(2)}): merge refused`];
+  if (r.status === "supported") return ["PASS", "var(--green)", "Calibrated supported: forwarded to human sign-off"];
+  return ["HOLD", "var(--amber)", `No calibrated verdict (leans ${r.raw_label.replace("_", " ")} ${p[r.raw_label].toFixed(2)}): routed to a named reviewer`];
+}
+function codeView(el, src, other, cls) {
+  const o = new Set(other.split("\n"));
+  el.innerHTML = src.split("\n").map((l) => `<span class="${o.has(l) ? "" : cls}">${l.replace(/&/g, "&amp;").replace(/</g, "&lt;") || " "}</span>`).join("");
+  const hit = el.querySelector("." + cls); if (hit) el.scrollTop = hit.offsetTop - 70;
+}
+function resetVerdict() {
+  $("bars").innerHTML = LABELS.map(([k, n, c]) => `<div class="bar"><span>${n}</span><div class="track"><div class="fill" id="f-${k}" style="background:${c}"></div></div><span class="val" id="v-${k}">–</span></div>`).join("");
+  $("stamp").className = "stamp"; $("why").className = "why"; $("stamp").textContent = ""; $("why").textContent = "";
+}
+function load(k) {
+  cur = k; const e = DATA.evidence[k];
+  document.querySelectorAll(".tabs button").forEach((b) => b.classList.toggle("on", b.dataset.k === k));
+  codeView($("orig"), DATA.cobol.orig, DATA.cobol[k], "del"); codeView($("mod"), DATA.cobol[k], DATA.cobol.orig, "add");
+  const bad = e.z3_formal_result === "COUNTEREXAMPLE";
+  $("z3").textContent = e.z3_formal_result; $("z3").className = "badge " + (bad ? "b-red" : "b-green");
+  $("z3plain").textContent = FORMAL[e.z3_formal_result]; $("z3detail").textContent = e.z3_formal_detail;
+  resetVerdict(); $("meta").textContent = "Not run yet.";
+}
+async function run() {
+  const e = DATA.evidence[cur], desc = $("desc").value.trim(), policy = $("policy").value.trim();
+  const inputs = { policy, evidence: evidenceText(e, desc), claim: CLAIM };
+  $("sent").textContent = JSON.stringify({ inputs }, null, 2);
+  resetVerdict(); $("run").disabled = true; $("run").textContent = "Sapling is checking…"; $("meta").textContent = "Calling " + SAPLING;
+  const t0 = performance.now();
+  try {
+    const res = await fetch(SAPLING, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ inputs }) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    const r = await res.json(), rt = performance.now() - t0;
+    LABELS.forEach(([k], i) => setTimeout(() => { $("f-" + k).style.width = (r.probabilities[k] * 100) + "%"; $("v-" + k).textContent = r.probabilities[k].toFixed(2); }, 120 * i));
+    const [g, c, why] = decide(r);
+    setTimeout(() => { const s = $("stamp"); s.textContent = g; s.style.color = c; s.style.borderColor = c; s.classList.add("go"); $("why").textContent = why; $("why").style.color = c; $("why").classList.add("go"); }, 1100);
+    $("meta").textContent = `status ${r.status} · top label ${r.raw_label} · model ${Math.round(r.timing_ms.model)} ms · round trip ${Math.round(rt)} ms · ${r.model} ${r.release_stage} · weights ${r.weights_sha256.slice(0, 12)}…`;
+  } catch (err) { $("meta").textContent = "Sapling call failed: " + err.message; }
+  $("run").disabled = false; $("run").textContent = "Run Sapling check";
+}
+$("desc").value = DEFAULT_DESC; $("policy").value = DATA.policy.trim(); $("claim").textContent = CLAIM;
+document.querySelectorAll(".tabs button").forEach((b) => b.onclick = () => load(b.dataset.k));
+$("run").onclick = run; load("bug");
+</script></body></html>
