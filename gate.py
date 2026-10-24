@@ -8,8 +8,14 @@ the claim "this change complies with the policy". The gate is deliberately asymm
     PASS   Sapling returns a calibrated (single-label) supported
     HOLD   anything else goes to a named human reviewer, with Sapling's lean shown
 
-    uv run gate.py evidence/bug.json "Refactor of CALC-NET-PAY for readability. No change to pay."
+    uv run gate.py cobol/PAYROLL.cob cobol/PAYROLL_ai_bug.cob "Refactor of CALC-NET-PAY for readability. No change to pay."
+    uv run gate.py evidence/bug.json "..."   # or Refinery's saved evidence for the same change
+
+With two .cob files the evidence comes from z3check.py, the open formal check in this repo.
 """
+# /// script
+# dependencies = ["z3-solver"]
+# ///
 import json
 import sys
 import urllib.request
@@ -55,9 +61,15 @@ def decide(r: dict) -> tuple[str, str]:
 
 
 def main() -> int:
-    ev_path, description = sys.argv[1], sys.argv[2]
+    *paths, description = sys.argv[1:]
+    if len(paths) == 2:
+        from z3check import check
+
+        ev = check(Path(paths[0]), Path(paths[1]))
+    else:
+        ev = json.loads(Path(paths[0]).read_text())
     policy = (HERE / "policy.md").read_text()
-    evidence = evidence_text(json.loads(Path(ev_path).read_text()), description)
+    evidence = evidence_text(ev, description)
     print(f"POLICY    {policy.strip().replace(chr(10), chr(10) + '          ')}")
     print(f"EVIDENCE  {evidence}")
     print(f"CLAIM     {CLAIM}")
@@ -70,9 +82,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    # Self-check of the gate rule, no network.
-    assert decide({"raw_label": "violation", "status": "unsure", "probabilities": {"violation": 0.94}})[0] == "BLOCK"
-    assert decide({"raw_label": "violation", "status": "unsure", "probabilities": {"violation": 0.6}})[0] == "HOLD"
-    assert decide({"raw_label": "supported", "status": "supported", "probabilities": {"supported": 0.9}})[0] == "PASS"
-    assert decide({"raw_label": "supported", "status": "unsure", "probabilities": {"supported": 0.46}})[0] == "HOLD"
     sys.exit(main())

@@ -12,11 +12,34 @@
 
 **An AI tool says its COBOL edit is "just a refactor". Banyan Sapling checks that claim against the bank's change policy and a formal proof, and the gate blocks the merge when the claim is false.**
 
-[**Try it live**](https://atiladeokegab.github.io/sapling-cobol-gate/) · [**How it works**](#how-it-works) · [**The demo**](#the-demo-one-payroll-program-two-ai-edits) · [**Sweep**](#sweep-six-descriptions-two-edits) · [**Run it**](#run-it) · [**Honest limits**](#honest-limits) · [**Film**](https://github.com/atiladeokegab/sapling-cobol-gate/releases/tag/v0.1)
+[**Try it live**](https://atiladeokegab.github.io/sapling-cobol-gate/) · [**For judges**](#for-judges) · [**How it works**](#how-it-works) · [**The demo**](#the-demo-one-payroll-program-two-ai-edits) · [**Sweep**](#sweep-six-descriptions-two-edits) · [**Run it**](#run-it) · [**Honest limits**](#honest-limits) · [**Film**](https://github.com/atiladeokegab/sapling-cobol-gate/releases/tag/v0.1)
 
 <img src="docs/demo.gif" alt="The live demo page: Edit 1 doubles the bonus; clicking Run Sapling check fills violation 0.92 and stamps BLOCK. Edit 2, a proved-equivalent refactor, runs and stamps HOLD for a named reviewer." width="100%">
 
 </div>
+
+## For judges
+
+Everything Sapling does here runs from this repo, end to end, from COBOL source:
+
+```bash
+uv run gate.py cobol/PAYROLL.cob cobol/PAYROLL_ai_bug.cob "Refactor of CALC-NET-PAY for readability. Reorders terms only; no change to any employee's pay."
+# Z3 check -> evidence -> live Sapling call -> GATE BLOCK (exit 1)
+uv run --no-project --with pytest --with z3-solver pytest -q tests   # 7 offline tests
+```
+
+| Piece | File | What it does |
+|---|---|---|
+| The gate | [gate.py](gate.py) | Builds Sapling's evidence, calls Sapling live, applies the asymmetric BLOCK / PASS / HOLD rule; exit code drops into CI |
+| Open formal check | [z3check.py](z3check.py) | Reads every COMPUTE, substitutes earlier results, asks Z3 for an input where original and AI-modified differ |
+| Policy | [policy.md](policy.md) | The four change-control rules Sapling judges against |
+| Live demo | [scripts/page.html](scripts/page.html) → [docs/index.html](https://atiladeokegab.github.io/sapling-cobol-gate/) | The same gate in the browser, calling Sapling directly |
+| Sweep | [scripts/sweep.py](scripts/sweep.py), [results/sweep.json](results/sweep.json) | 12 live Sapling calls: six AI descriptions × two edits, scored against expected verdicts |
+| Tests | [tests/test_gate.py](tests/test_gate.py) | Gate rule, evidence wording, Z3 results, and agreement with Refinery's saved evidence |
+
+**Where Sapling does the hard part:** nothing in the code compares the AI's description to the change. Sapling alone decides whether "reorders terms only; no change to pay" is a policy violation given the evidence; the gate only acts on its scores.
+
+**What is private:** [Refinery](https://refinery.guru), the full attestation engine (11 checks, compiled-output comparison, a much wider Z3 model, signed certificates). Its output for both edits is saved in [evidence/](evidence/) via [export_evidence.py](export_evidence.py); `z3check.py` is a small open re-implementation of the one check this demo needs, and a test pins that both agree. All code here was written during Night Shift.
 
 ## The problem
 
@@ -122,9 +145,12 @@ uv run --with matplotlib scripts/charts.py              # redraws docs/*.png
 
 ## Run it
 
-No keys needed; Sapling's preview endpoint is open. Python 3.10+, standard library only.
+No keys needed; Sapling's preview endpoint is open. `uv run` installs the one dependency (z3-solver).
 
 ```bash
+# from COBOL source, with the open Z3 check
+uv run gate.py cobol/PAYROLL.cob cobol/PAYROLL_ai_refactor.cob "Refactor of CALC-NET-PAY for readability. Reorders terms only; no change to any employee's pay."
+# or from Refinery's saved evidence for the same change
 uv run gate.py evidence/bug.json "Refactor of CALC-NET-PAY for readability. Reorders terms only; no change to any employee's pay."
 # exit 1 = BLOCK, 0 = PASS, 2 = HOLD, so it drops straight into CI
 ```

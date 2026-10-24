@@ -42,6 +42,6 @@
       *----------------------------------------------------------------
        CALC-NET-PAY.
            COMPUTE WS-NET-PAY =
-               WS-BASE-PAY + WS-BONUS * 2 - WS-DEDUCTION - WS-TAX-AMOUNT.
+           WS-BASE-PAY + WS-BONUS * 2 - WS-DEDUCTION - WS-TAX-AMOUNT.
 
        END PROGRAM PAYROLL.

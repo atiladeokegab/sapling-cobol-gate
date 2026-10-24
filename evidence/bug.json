@@ -2,7 +2,7 @@
   "program": "PAYROLL.cob",
   "source_diff": [
     "-               WS-BASE-PAY + WS-BONUS - WS-DEDUCTION - WS-TAX-AMOUNT.",
-    "+               WS-BASE-PAY + WS-BONUS * 2 - WS-DEDUCTION - WS-TAX-AMOUNT."
+    "+           WS-BASE-PAY + WS-BONUS * 2 - WS-DEDUCTION - WS-TAX-AMOUNT."
   ],
   "changed_paragraphs": [
     "CALC-NET-PAY"
