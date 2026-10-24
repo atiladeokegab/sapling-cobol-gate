@@ -1,10 +1,24 @@
-# Sapling COBOL change gate
+<div align="center">
+
+<img src="docs/banner.svg" alt="Banner: Sapling COBOL change gate. Verify what the AI says it changed. A COBOL diff where an AI doubled the bonus, Banyan Sapling scoring it violation 0.92, and a red BLOCK stamp." width="100%">
+
+<br>
+
+[![Banyan Sapling](https://img.shields.io/badge/Banyan%20Sapling-policy%20verifier-00D46A)](https://mubit.ai)
+[![Refinery](https://img.shields.io/badge/Refinery-Z3%20formal%20proof-F4F4F5)](https://refinery.guru)
+[![COBOL](https://img.shields.io/badge/COBOL-payroll-FCD34D)](cobol/PAYROLL.cob)
+[![Python](https://img.shields.io/badge/python-stdlib%20only-3776AB?logo=python&logoColor=white)](gate.py)
+[![Live demo](https://img.shields.io/badge/live%20demo-GitHub%20Pages-222?logo=github)](https://atiladeokegab.github.io/sapling-cobol-gate/)
 
 **An AI tool says its COBOL edit is "just a refactor". Banyan Sapling checks that claim against the bank's change policy and a formal proof, and the gate blocks the merge when the claim is false.**
 
-**Live demo:** https://atiladeokegab.github.io/sapling-cobol-gate/ (calls Sapling from your browser; edit the AI's description or the policy and run again)
+[**Try it live**](https://atiladeokegab.github.io/sapling-cobol-gate/) · [**How it works**](#how-it-works) · [**The demo**](#the-demo-one-payroll-program-two-ai-edits) · [**Sweep**](#sweep-six-descriptions-two-edits) · [**Run it**](#run-it) · [**Honest limits**](#honest-limits) · [**Film**](https://github.com/atiladeokegab/sapling-cobol-gate/releases/tag/v0.1)
 
-![Sapling blocks the false refactor claim and holds the real refactor for a reviewer](demo/gate.png)
+<img src="docs/demo.gif" alt="The live demo page: Edit 1 doubles the bonus; clicking Run Sapling check fills violation 0.92 and stamps BLOCK. Edit 2, a proved-equivalent refactor, runs and stamps HOLD for a named reviewer." width="100%">
+
+</div>
+
+## The problem
 
 Banks are letting AI assistants edit decades-old COBOL that moves money. The AI writes a confident change description ("readability refactor, no change to pay") and a tired reviewer approves it. This gate makes the description itself something that gets verified.
 
