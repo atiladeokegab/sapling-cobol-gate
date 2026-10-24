@@ -9,10 +9,11 @@
 [![COBOL](https://img.shields.io/badge/COBOL-payroll-FCD34D)](cobol/PAYROLL.cob)
 [![Python](https://img.shields.io/badge/python-stdlib%20only-3776AB?logo=python&logoColor=white)](gate.py)
 [![Live demo](https://img.shields.io/badge/live%20demo-GitHub%20Pages-222?logo=github)](https://atiladeokegab.github.io/sapling-cobol-gate/)
+[![tests](https://github.com/atiladeokegab/sapling-cobol-gate/actions/workflows/tests.yml/badge.svg)](https://github.com/atiladeokegab/sapling-cobol-gate/actions/workflows/tests.yml)
 
 **An AI tool says its COBOL edit is "just a refactor". Banyan Sapling checks that claim against the bank's change policy and a formal proof, and the gate blocks the merge when the claim is false.**
 
-[**Try it live**](https://atiladeokegab.github.io/sapling-cobol-gate/) · [**For judges**](#for-judges) · [**How it works**](#how-it-works) · [**The demo**](#the-demo-one-payroll-program-two-ai-edits) · [**Sweep**](#sweep-six-descriptions-two-edits) · [**Run it**](#run-it) · [**Honest limits**](#honest-limits) · [**Film**](https://github.com/atiladeokegab/sapling-cobol-gate/releases/tag/v0.1)
+[**Try it live**](https://atiladeokegab.github.io/sapling-cobol-gate/) · [**In Refinery**](#inside-refinerys-portal) · [**For judges**](#for-judges) · [**Architecture (C4)**](docs/ARCHITECTURE.md) · [**Background**](docs/BACKGROUND.md) · [**For agents**](AGENTS.md) · [**How it works**](#how-it-works) · [**The demo**](#the-demo-one-payroll-program-two-ai-edits) · [**Sweep**](#sweep-six-descriptions-two-edits) · [**Run it**](#run-it) · [**Honest limits**](#honest-limits) · [**Film**](https://github.com/atiladeokegab/sapling-cobol-gate/releases/tag/v0.1)
 
 <img src="docs/demo.gif" alt="The live demo page: Edit 1 doubles the bonus; clicking Run Sapling check fills violation 0.92 and stamps BLOCK. Edit 2, a proved-equivalent refactor, runs and stamps HOLD for a named reviewer." width="100%">
 
@@ -35,11 +36,41 @@ uv run --no-project --with pytest --with z3-solver pytest -q tests   # 7 offline
 | Policy | [policy.md](policy.md) | The four change-control rules Sapling judges against |
 | Live demo | [scripts/page.html](scripts/page.html) → [docs/index.html](https://atiladeokegab.github.io/sapling-cobol-gate/) | The same gate in the browser, calling Sapling directly |
 | Sweep | [scripts/sweep.py](scripts/sweep.py), [results/sweep.json](results/sweep.json) | 12 live Sapling calls: six AI descriptions × two edits, scored against expected verdicts |
-| Tests | [tests/test_gate.py](tests/test_gate.py) | Gate rule, evidence wording, Z3 results, and agreement with Refinery's saved evidence |
+| Tests | [tests/test_gate.py](tests/test_gate.py) | Gate rule, evidence wording, Z3 results, and agreement with Refinery's saved evidence; run in CI on every push |
+| Architecture | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | C4 context, container and component diagrams, the runtime sequence and the gate decision |
+| Background | [docs/BACKGROUND.md](docs/BACKGROUND.md) | The long read: COBOL's traps, formal equivalence, what Sapling is, how the inputs are built, what we learned, limits, glossary |
+| Agent guide | [AGENTS.md](AGENTS.md) | Reading order and a claim-to-evidence map for automated judges |
 
 **Where Sapling does the hard part:** nothing in the code compares the AI's description to the change. Sapling alone decides whether "reorders terms only; no change to pay" is a policy violation given the evidence; the gate only acts on its scores.
 
 **What is private:** [Refinery](https://refinery.guru), the full attestation engine (11 checks, compiled-output comparison, a much wider Z3 model, signed certificates). Its output for both edits is saved in [evidence/](evidence/) via [export_evidence.py](export_evidence.py); `z3check.py` is a small open re-implementation of the one check this demo needs, and a test pins that both agree. All code here was written during Night Shift.
+
+## The system at a glance
+
+```mermaid
+flowchart LR
+    ai["AI coding tool<br/>edit + description"] --> ref["Refinery / z3check<br/>diff + Z3 proof"]
+    ref -- "facts" --> sap["Banyan Sapling<br/>policy + evidence + claim"]
+    ai -- "the AI's claim" --> sap
+    sap -- "label + probabilities" --> gate{"Asymmetric gate"}
+    gate -- "violation ≥ 0.90" --> block["BLOCK · exit 1"]
+    gate -- "calibrated supported" --> pass["PASS · exit 0<br/>to sign-off"]
+    gate -- "anything else" --> hold["HOLD · exit 2<br/>named reviewer"]
+    classDef red fill:#450a0a,stroke:#F87171,color:#FCA5A5
+    classDef green fill:#052e16,stroke:#00D46A,color:#86EFAC
+    classDef amber fill:#422006,stroke:#FCD34D,color:#FDE68A
+    class block red
+    class pass green
+    class hold amber
+```
+
+Refinery establishes **what the change does**. Sapling judges **whether what the AI said about it complies with the policy**. The gate turns that judgement into an action CI can enforce. Full C4 diagrams: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Inside Refinery's portal
+
+The same check runs as a page in Refinery's governance portal, next to where a reviewer already signs changes off. Live demo build: **[refinery-sapling-demo…run.app/sapling](https://refinery-sapling-demo-901257379404.europe-west1.run.app/sapling)** (no login).
+
+![Refinery portal: the AI's diff doubling the bonus, the change-control policy, Sapling scoring violation 0.92, and a red BLOCK stamp](docs/portal.png)
 
 ## The problem
 
