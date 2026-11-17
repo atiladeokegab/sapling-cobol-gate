@@ -2,6 +2,8 @@
 
 <img src="docs/banner.svg" alt="Banner: Sapling COBOL change gate. Verify what the AI says it changed. A COBOL diff where an AI doubled the bonus, Banyan Sapling scoring it violation 0.92, and a red BLOCK stamp." width="100%">
 
+<p><b>🥈 2nd place, side challenge</b><br>Night Shift: Mubit Hackathon · London · 23–25 October 2026</p>
+
 <br>
 
 [![Banyan Sapling](https://img.shields.io/badge/Banyan%20Sapling-policy%20verifier-00D46A)](https://mubit.ai)
